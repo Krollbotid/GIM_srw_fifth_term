@@ -22,10 +22,10 @@ void print_dct_blocks(const char *filename) {
 
     JDIMENSION block_row;
     while (cinfo.output_scanline < cinfo.output_height) {
-        JSAMPIMAGE buffer = (*cinfo.mem->alloc_sarray)((j_common_ptr) &cinfo, JPOOL_IMAGE, MCU_width * DCTSIZE2, MCU_height);
-        jpeg_read_raw_data(&cinfo, buffer, MCU_height);
+        JSAMPARRAY buffer = (*cinfo.mem->alloc_sarray)((j_common_ptr) &cinfo, JPOOL_IMAGE, MCU_width * DCTSIZE2, MCU_height);
+        jpeg_read_raw_data(&cinfo, &buffer, MCU_height);
         for (block_row = 0; block_row < MCU_height; block_row++) {
-            JSAMPROW row = buffer[0][block_row];
+            JSAMPROW row = buffer[block_row];
             for (JDIMENSION i = 0; i < MCU_width; i++) {
                 for (JDIMENSION j = 0; j < DCTSIZE2; j++) {
                     printf("%d ", row[i * DCTSIZE2 + j]);
@@ -34,7 +34,7 @@ void print_dct_blocks(const char *filename) {
             }
             printf("\n");
         }
-        (*cinfo.mem->free_sarray)((j_common_ptr) &cinfo, buffer, MCU_height);
+        (*cinfo.mem->free_pool)((j_common_ptr) &cinfo, JPOOL_IMAGE);
     }
 
     jpeg_finish_decompress(&cinfo);
