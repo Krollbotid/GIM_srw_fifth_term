@@ -2,55 +2,63 @@
 #include <jpeglib.h>
 
 void print_dct_blocks(const char *filename) {
-    struct jpeg_decompress_struct cinfo;  // JPEG decompression struct
-    struct jpeg_error_mgr jerr;  // Error handler
-
-    FILE *infile;
-    if ((infile = fopen(filename, "rb")) == NULL) {  // Open the JPEG file
+    FILE *infile = fopen(filename, "rb");
+    if (infile == NULL) {
         fprintf(stderr, "Error opening file\n");
         return;
     }
 
-    cinfo.err = jpeg_std_error(&jerr);  // Initialize the error handler
-    jpeg_create_decompress(&cinfo);  // Initialize the JPEG decompression object
-    jpeg_stdio_src(&cinfo, infile);  // Specify the input file
-    jpeg_read_header(&cinfo, TRUE);  // Read the file header
-    jpeg_start_decompress(&cinfo);  // Start the decompression process
+    // Open the input file for reading in binary mode.
 
-    JDIMENSION MCU_width = cinfo.comp_info[0].width_in_blocks;  // MCU width
-    JDIMENSION MCU_height = cinfo.comp_info[0].height_in_blocks;  // MCU height
+    struct jpeg_decompress_struct cinfo;
+    struct jpeg_error_mgr jerr;
 
-    JBLOCKARRAY buffer;  // Array for DCT coefficients
-    buffer = (cinfo.mem->alloc_sarray)((j_common_ptr) &cinfo, JPOOL_IMAGE, MCU_width * MCU_height * DCTSIZE2, 1);  // Allocate memory for DCT coefficients
+    cinfo.err = jpeg_std_error(&jerr);
+    jpeg_create_decompress(&cinfo);
+    jpeg_stdio_src(&cinfo, infile);
+    jpeg_read_header(&cinfo, TRUE);
+    jpeg_start_decompress(&cinfo);
 
-    int block_row;
-    while (cinfo.output_scanline < cinfo.output_height) {  // Iterate through the scanlines
-        jpeg_read_raw_data(&cinfo, buffer, MCU_height);  // Read raw DCT coefficients
+    // Set up JPEG decompression structure, error handling, and start decompression process.
+
+    JDIMENSION MCU_width = cinfo.comp_info[0].width_in_blocks;
+    JDIMENSION MCU_height = cinfo.comp_info[0].height_in_blocks;
+
+    // Retrieve dimensions of Minimum Coded Unit (MCU) in width and height.
+
+    JDIMENSION block_row;
+    while (cinfo.output_scanline < cinfo.output_height) {
+        JBLOCKARRAY buffer = (*cinfo.mem->alloc_barray)((j_common_ptr) &cinfo, JPOOL_IMAGE, MCU_width * DCTSIZE2);
+        jpeg_read_raw_data(&cinfo, buffer, MCU_height);
         for (block_row = 0; block_row < MCU_height; block_row++) {
-            JCOEFPTR block = buffer[0] + block_row * MCU_width * DCTSIZE2;  // Pointer to the current block
-            for (int i = 0; i < MCU_width; i++) {  // Iterate through the blocks in the row
-                for (int j = 0; j < DCTSIZE2; j++) {  // Iterate through the DCT coefficients in the block
-                    printf("%d ", block[i * DCTSIZE2 + j]);  // Print the DCT coefficient
+            JCOEFPTR block = buffer[0][block_row];
+            for (JDIMENSION i = 0; i < MCU_width; i++) {
+                for (JDIMENSION j = 0; j < DCTSIZE2; j++) {
+                    printf("%d ", block[i * DCTSIZE2 + j]);
                 }
-                printf("\n");  // New line for the next row of coefficients
+                printf("\n");
             }
-            printf("\n");  // Print an extra newline between blocks
+            printf("\n");
         }
+        (*cinfo.mem->free_barray)((j_common_ptr) &cinfo, buffer, MCU_height);
     }
 
-    jpeg_finish_decompress(&cinfo);  // Finish the decompression
-    jpeg_destroy_decompress(&cinfo);  // Clean up the decompression object
-    fclose(infile);  // Close the file
+    // Loop through the image data, reading the raw data and printing DCT blocks.
+
+    jpeg_finish_decompress(&cinfo);
+    jpeg_destroy_decompress(&cinfo);
+    fclose(infile);
+    // Finish decompression process and release decompression structure.
 }
 
 int main(int argc, char *argv[]) {
-    if (argc < 2) {  // Check for command-line argument
+    if (argc < 2) {
         printf("Usage: %s <jpeg_file_name>\n", argv[0]);
-        return 1;  // Exit with error
+        return 1;
     }
-
     const char *filename = argv[1];
-    print_dct_blocks(filename);  // Call the function to print DCT coefficients
-
-    return 0;  // Exit successfully
+    print_dct_blocks(filename);
+    return 0;
 }
+
+// Main function to check for command-line argument and call the print_dct_blocks function.
