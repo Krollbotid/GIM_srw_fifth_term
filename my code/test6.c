@@ -3,7 +3,7 @@
 #include <jpeglib.h>
 #include <stdlib.h>
 
-JSAMPARRAY *jsarray_alloc() {
+JSAMPARRAY jsarray_alloc() {
     JSAMPARRAY buffer = (JSAMPARRAY) malloc(8 * sizeof(JSAMPROW));
     for (int i = 0; i < 8; i++) {
         buffer[i] = (JSAMPROW) malloc(8 * sizeof(JSAMPLE));
@@ -11,9 +11,9 @@ JSAMPARRAY *jsarray_alloc() {
     return buffer;
 }
 
-void jsarray_free(JSAMPARRAY *buffer) {
+void jsarray_free(JSAMPARRAY buffer) {
     for (int i = 0; i < 8; i++) {
-       free(buffer(i));
+       free(buffer[i]);
     }
     free(buffer);
     return;
@@ -65,6 +65,7 @@ int main(int argc, char *argv[]) {
             printf("\n");
         }
         block_index++;
+        printf("\nBlock number:%d\n", block_index);
     }
     jsarray_free(buffer);
 
@@ -96,7 +97,7 @@ int main(int argc, char *argv[]) {
     
     jpeg_set_defaults(&cinfo_dest);
     jpeg_set_quality(&cinfo_dest, 100, TRUE);
-    jpeg_start_compress(&cinfo_dest);
+    jpeg_start_compress(&cinfo_dest, TRUE);
 
     while (cinfo.output_scanline < cinfo.image_height) {
         JSAMPARRAY buffer = calloc(64, sizeof(JSAMPLE));
