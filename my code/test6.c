@@ -3,22 +3,6 @@
 #include <jpeglib.h>
 #include <stdlib.h>
 
-JSAMPARRAY jsarray_alloc() {
-    JSAMPARRAY buffer = (JSAMPARRAY) malloc(8 * sizeof(JSAMPROW));
-    for (int i = 0; i < 8; i++) {
-        buffer[i] = (JSAMPROW) malloc(8 * sizeof(JSAMPLE));
-    }
-    return buffer;
-}
-
-void jsarray_free(JSAMPARRAY buffer) {
-    for (int i = 0; i < 8; i++) {
-       free(buffer[i]);
-    }
-    free(buffer);
-    return;
-}
-
 int main(int argc, char *argv[]) {
     int A[8][8] = {
         {5, 4, 6, 8, 1, 1, 7, 9},
@@ -55,7 +39,8 @@ int main(int argc, char *argv[]) {
     JDIMENSION block_index = 0;
     
     // Print DCT coefs
-    JSAMPARRAY buffer = jsarray_alloc();
+    int row_stride = cinfo.output_width * cinfo.output_components;
+    JSAMPARRAY buffer = (*cinfo.mem->alloc_sarray)((j_common_ptr) &cinfo, JPOOL_IMAGE, row_stride, 1);
     while (cinfo.output_scanline < cinfo.output_height) {
         jpeg_read_scanlines(&cinfo, buffer, 8);
         for (int i = 0; i < 8; i++) {
@@ -67,7 +52,6 @@ int main(int argc, char *argv[]) {
         block_index++;
         printf("\nBlock number:%d\n", block_index);
     }
-    jsarray_free(buffer);
 
     fclose(input_file);
 
