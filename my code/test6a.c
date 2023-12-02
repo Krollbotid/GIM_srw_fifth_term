@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
         // Apply the matrix A to the DCT coefficients
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
-                buffer[i][j] += A[i][j]; // Example modification, you can customize this based on your specific requirement
+                buffer[i][j] += A[i][j];
             }
         }
 

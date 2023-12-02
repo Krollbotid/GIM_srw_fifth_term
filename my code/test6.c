@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
         {3, 7, 4, 0, 8, 5, 2, 5}
     };
     if (argc != 3) {
-        fprintf(stderr, "Usage: %s <input_file> <output_file1> <output_file2>\n", argv[0]);
+        fprintf(stderr, "Usage: %s <input_file> <output_file1>\n", argv[0]);
         exit(EXIT_FAILURE);
     }
     struct jpeg_decompress_struct cinfo;
@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
     
     // Print DCT coefs
     int row_stride = cinfo.output_width * cinfo.output_components;
-    JSAMPARRAY buffer = (*cinfo.mem->alloc_sarray)((j_common_ptr) &cinfo, JPOOL_IMAGE, row_stride, 1);
+    JSAMPARRAY buffer = (cinfo.mem->alloc_sarray)((j_common_ptr) &cinfo, JPOOL_IMAGE, row_stride, 1);
     while (cinfo.output_scanline < cinfo.output_height) {
         jpeg_read_scanlines(&cinfo, buffer, 8);
         for (int i = 0; i < 8; i++) {
@@ -100,19 +100,6 @@ int main(int argc, char *argv[]) {
     jpeg_finish_compress(&cinfo_dest);
     fclose(output_file1);
     jpeg_destroy_compress(&cinfo_dest);
-
-    /*FILE *output_file2 = fopen(argv[3], "wb");
-    if (!output_file2) {
-        fprintf(stderr, "Error opening file for writing.\n");
-        exit(EXIT_FAILURE);
-    }
-    jpeg_stdio_dest(&cinfo_dest, output_file2);
-    
-    // Repeat the process for the third output color JPEG file
-
-    jpeg_finish_compress(&cinfo_dest);
-    fclose(output_file2);
-    jpeg_destroy_compress(&cinfo_dest);*/
 
     jpeg_finish_decompress(&cinfo);
     jpeg_destroy_decompress(&cinfo);
