@@ -1,3 +1,0 @@
-декодирование jpeg для чайников https://habr.com/ru/articles/102521/
-общая инфа по libjpeg https://github.com/libjpeg-turbo/libjpeg-turbo/blob/main/libjpeg.txt
-декодирование jpeg с помощью питона https://habr.com/ru/companies/vk/articles/512004/

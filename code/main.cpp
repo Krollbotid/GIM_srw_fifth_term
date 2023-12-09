@@ -32,6 +32,16 @@ int write_jpeg_file(std::string outname, jpeg_decompress_struct in_cinfo, jvirt_
 
 int read_jpeg_file(std::string filename, std::string outname)
 {
+	int A[8][8] = {
+        {5, 4, 6, 8, 1, 1, 7, 9},
+        {1, 7, 7, 8, 8, 5, 2, 6},
+        {8, 7, 0, 0, 6, 0, 6, 4},
+        {2, 6, 4, 1, 7, 2, 3, 3},
+        {1, 3, 2, 3, 6, 0, 8, 5},
+        {6, 2, 3, 9, 2, 7, 5, 7},
+        {2, 7, 5, 1, 7, 2, 5, 2},
+        {3, 7, 4, 0, 8, 5, 2, 5}
+    };
     struct jpeg_decompress_struct cinfo;
     struct jpeg_error_mgr jerr;
     FILE * infile;
@@ -48,30 +58,33 @@ int read_jpeg_file(std::string filename, std::string outname)
 
 
     jvirt_barray_ptr *coeffs_array = jpeg_read_coefficients(&cinfo);
-
+    JBLOCKARRAY buffer_one;
+    JCOEFPTR blockptr_one;
+    jpeg_component_info* compptr_one;
+	/*
     //change one dct:
     int ci = 0; // between 0 and number of image component
     int by = 0; // between 0 and compptr_one->height_in_blocks
     int bx = 0; // between 0 and compptr_one->width_in_blocks
     int bi = 0; // between 0 and 64 (8x8)
-    JBLOCKARRAY buffer_one;
-    JCOEFPTR blockptr_one;
-    jpeg_component_info* compptr_one;
-    compptr_one = cinfo.comp_info + ci;
-	for (int i = 0; i < compptr_one->height_in_blocks; i++) { //by
-    	buffer_one = (cinfo.mem->access_virt_barray)((j_common_ptr)&cinfo, coeffs_array[ci], i, (JDIMENSION)1, FALSE);
-    	for (int j = 0; j < compptr_one->width_in_blocks; j++) { //bx
-    		blockptr_one = buffer_one[i][j];
-			printf("Block %d row, %d column from %d rows %d columns\n", i, j, compptr_one->height_in_blocks, compptr_one->width_in_blocks);
-			for (int l = 0; l < 64; l += 8) {
-				for (int k = l; k < 8 + l; k++) {
-					printf("%d ", blockptr_one[k]);
-					blockptr_one[k]++;
+	*/
+	for (int n = 0; n < 3; n++) { // ci
+    	compptr_one = cinfo.comp_info + n;
+		for (int i = 0; i < compptr_one->height_in_blocks; i++) { //by
+    		buffer_one = (cinfo.mem->access_virt_barray)((j_common_ptr)&cinfo, coeffs_array[ci], i, (JDIMENSION)1, FALSE);
+    		for (int j = 0; j < compptr_one->width_in_blocks; j++) { //bx
+    			blockptr_one = buffer_one[0][j]; // YES, left index must be 0 otherwise it gets SIGSEGV after half of rows. Idk why.
+				printf("Block %d row, %d column from %d rows %d columns\n", i, j, compptr_one->height_in_blocks, compptr_one->width_in_blocks);
+				for (int l = 0; l < 64; l += 8) {
+					for (int k = l; k < 8 + l; k++) { // bi = k + l
+						printf("%d ", blockptr_one[k]);
+						blockptr_one[k] += A[l / 8][k]; // modifying each coefficient
+					}
+					printf("\n");
 				}
-				printf("\n");
-			}
+    		}
     	}
-    }
+	}
 
     write_jpeg_file(outname, cinfo, coeffs_array);
 
