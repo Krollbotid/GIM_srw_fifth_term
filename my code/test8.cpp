@@ -58,13 +58,13 @@ int read_jpeg_file(std::string filename, std::string outname)
     JCOEFPTR blockptr_one;
     jpeg_component_info* compptr_one;
     compptr_one = cinfo.comp_info + ci;
-    buffer_one = (cinfo.mem->access_virt_barray)((j_common_ptr)&cinfo, coeffs_array[ci], compptr_one->height_in_blocks, (JDIMENSION)1, FALSE);
 	for (int i = 0; i < compptr_one->height_in_blocks; i++) { //by
+    	buffer_one = (cinfo.mem->access_virt_barray)((j_common_ptr)&cinfo, coeffs_array[ci], i, (JDIMENSION)1, FALSE);
     	for (int j = 0; j < compptr_one->width_in_blocks; j++) { //bx
     		blockptr_one = buffer_one[i][j];
-			printf("Block %d row, %d column from %d rows %d columns\n", i, j, compptr_one->height_in_blocks, compptr_one->width_in_blocks)
-			for (int k = 0; k < 64; k += l) {
-				for (int k = 0; k < 8 + l; k++) {
+			printf("Block %d row, %d column from %d rows %d columns\n", i, j, compptr_one->height_in_blocks, compptr_one->width_in_blocks);
+			for (int l = 0; l < 64; l += 8) {
+				for (int k = l; k < 8 + l; k++) {
 					printf("%d ", blockptr_one[k]);
 					blockptr_one[k]++;
 				}
