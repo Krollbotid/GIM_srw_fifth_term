@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
     JCOEFPTR blockptr;
 
     while (cinfo.output_scanline < cinfo.output_height) {
-        buffer = (cinfo.mem->alloc_sarray)((j_common_ptr)&cinfo, JPOOL_IMAGE, MCU_width * DCTSIZE, MCU_height * DCTSIZE);
+        buffer = (cinfo.mem->alloc_barray)((j_common_ptr)&cinfo, JPOOL_IMAGE, MCU_width * DCTSIZE, MCU_height * DCTSIZE);
         jpeg_read_raw_data(&cinfo, buffer, MCU_height * DCTSIZE);
         for (int ci = 0; ci < cinfo.num_components; ci++) {
             jpeg_component_info *compptr = &cinfo.comp_info[ci];
