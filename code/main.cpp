@@ -84,12 +84,14 @@ void insert_by_qim(const JCOEFPTR block, const size_t len, size_t *bits_not_enco
     JCOEF q = find_quant_step(block, 1, DCTSIZE2 - len);
     if (q < 2) 
         q = 2;
-    int counter = msg.size() - *bits_not_encoded;
+    int counter = ;
     for (int i = DCTSIZE2 - len; i < DCTSIZE2; ++i) {
-        block[i] = q * (block[i] / q) + q / 2 * (int) (msg[counter] - '0');
-        ++counter;
+        block[i] = q * (block[i] / q) + q / 2 * (int) (msg[msg.size() - *bits_not_encoded] - '0');
+        --(*bits_not_encoded);
+        if (!(*bits_not_encoded))
+            break;
     }
-    *bits_not_encoded = msg.size() - counter;
+    return;
 }
 
 int write_jpeg_file(std::string outname, jpeg_decompress_struct in_cinfo, jvirt_barray_ptr *coeffs_array){
@@ -181,9 +183,13 @@ int readnChange_jpeg_file(const std::string filename, const std::string outname,
                     std::cout << blockptr_one[coef_num] << " ";
                 }
                 std::cout << std::endl;
+                if (!(*bits_not_encoded)) {
+                    goto out_of_cycles;
+                }
     		}
     	}
 	}
+    out_of_cycles:
 
     write_jpeg_file(outname, cinfo, coeffs_array);
 
