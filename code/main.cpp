@@ -84,7 +84,6 @@ void insert_by_qim(const JCOEFPTR block, const size_t len, size_t *bits_not_enco
     JCOEF q = find_quant_step(block, 1, DCTSIZE2 - len);
     if (q < 2) 
         q = 2;
-    int counter = ;
     for (int i = DCTSIZE2 - len; i < DCTSIZE2; ++i) {
         block[i] = q * (block[i] / q) + q / 2 * (int) (msg[msg.size() - *bits_not_encoded] - '0');
         --(*bits_not_encoded);
@@ -159,30 +158,9 @@ int readnChange_jpeg_file(const std::string filename, const std::string outname,
     		buffer_one = (cinfo.mem->access_virt_barray)((j_common_ptr)&cinfo, coeffs_array[color_comp], i, (JDIMENSION)1, FALSE);
     		for (int j = 0; j < compptr_one->width_in_blocks; ++j) { //bx
     			blockptr_one = buffer_one[0][j]; // YES, left index must be 0 otherwise it gets SIGSEGV after half of rows. Idk why.
-
-                printf("Block %d row, %d column from %d rows %d columns\n", i, j, compptr_one->height_in_blocks, compptr_one->width_in_blocks);
-                for (int coef_num = 0; coef_num < DCTSIZE2; ++coef_num) {
-                    std::cout << blockptr_one[coef_num] << " ";
-                }
-                std::cout << std::endl;
-
 				to_zigzag(blockptr_one);
-                for (int coef_num = 0; coef_num < DCTSIZE2; ++coef_num) {
-                    std::cout << blockptr_one[coef_num] << " ";
-                }
-                std::cout << std::endl;
-
                 insert_by_qim(blockptr_one, len, bits_not_encoded, msg);
-                for (int coef_num = 0; coef_num < DCTSIZE2; ++coef_num) {
-                    std::cout << blockptr_one[coef_num] << " ";
-                }
-                std::cout << std::endl;
-
                 from_zigzag(blockptr_one);
-                for (int coef_num = 0; coef_num < DCTSIZE2; ++coef_num) {
-                    std::cout << blockptr_one[coef_num] << " ";
-                }
-                std::cout << std::endl;
                 if (!(*bits_not_encoded)) {
                     goto out_of_cycles;
                 }
@@ -243,7 +221,7 @@ int main(int argc, char* argv[])
     for (int k = 0; k < 7; ++k) {
         // Try reading and changing a jpeg
         bits_not_encoded = bmsg.size();
-        if (readnChange_jpeg_file(infilename, outfilename + std::to_string(k) + std::string(".jpg"), lens[k], &bits_not_encoded, msg) == 0)
+        if (readnChange_jpeg_file(infilename, outfilename + std::to_string(k) + std::string(".jpg"), lens[k], &bits_not_encoded, bmsg) == 0)
         {
             std::cout << "It's Okay... " << bits_not_encoded << "bits left not encoded." << std::endl;
         }
