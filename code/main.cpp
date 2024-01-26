@@ -151,8 +151,7 @@ int readnChange_jpeg_file(const std::string filename, const std::string outname,
     int bx = 0; // between 0 and compptr_one->width_in_blocks
     int bi = 0; // between 0 and 64 (8x8)
 	*/
-	for (int color_comp = 0; color_comp < 3; ++color_comp) { // ci
-        printf("Color component %d\n", color_comp);
+	for (int color_comp = 0; color_comp < 3; ++color_comp) { // ci 
     	compptr_one = cinfo.comp_info + color_comp;
 		for (int i = 0; i < compptr_one->height_in_blocks; i++) { //by
     		buffer_one = (cinfo.mem->access_virt_barray)((j_common_ptr)&cinfo, coeffs_array[color_comp], i, (JDIMENSION)1, FALSE);
