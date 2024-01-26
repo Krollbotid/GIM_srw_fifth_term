@@ -3,7 +3,11 @@
 #include <stdlib.h>
 #include <iostream>
 #include <string>
-#include <bitset>    
+#include <bitset>
+#include <unordered_map>
+#include <algorithm>
+#include <vector>
+#include <cmath>
 
 // Tables below exist in jutils.c, but I dont want to waste my time looking for way to include them - copy-paste is faster
 
@@ -51,6 +55,38 @@ void from_zigzag(const JCOEFPTR in) {
     return;
 }
 
+JCOEF find_quant_step(const JCOEFPTR arr, const size_t begin, const size_t end) { // [begin, end)
+    std::unordered_map<JCOEF, int> frequencyMap;
+
+    // Count the frequency of each element in the array
+    for (int i = begin; i < end; ++i) {
+        frequencyMap[arr[i]]++;
+    }
+
+    // Find the minimum frequency value
+    int minFrequency = std::min_element(frequencyMap.begin(), frequencyMap.end(),
+        [](const auto& a, const auto& b) {
+            return a.second < b.second;
+        })->second;
+
+    // Find all elements with the minimum frequency value
+    std::vector<JCOEF> leastFrequentElements;
+    for (const auto& pair : frequencyMap) {
+        if (pair.second == minFrequency) {
+            leastFrequentElements.push_back(pair.first);
+        }
+    }
+    std::transform(vec.begin(), vec.end(), vec.begin(), [](JCOEF n) { return std::abs(n); });
+    return std::min_element(leastFrequentElements.begin(), leastFrequentElements.end());
+}
+
+void insert_by_qim(const JCOEFPTR block, const size_t len, const size_t *bits_not_encoded, const std::string msg) {
+    JCOEF q = find_quant_step(block, 1, DCTSIZE2 - len);
+    for (int i = DCTSIZE2 - len; i < DCTSIZE2; ++i) {
+        block[i] = q * (block[i] / q) + q / 2 * (msg[msg.size() - *bits_not_encoded] - '0');
+        --(*bits_not_encoded);
+    }
+}
 
 int write_jpeg_file(std::string outname, jpeg_decompress_struct in_cinfo, jvirt_barray_ptr *coeffs_array){
 
@@ -78,7 +114,7 @@ int write_jpeg_file(std::string outname, jpeg_decompress_struct in_cinfo, jvirt_
     return 0;
 }
 
-int readnChange_jpeg_file(std::string filename, std::string outname, size_t len, size_t *bits_not_encoded)
+int readnChange_jpeg_file(const std::string filename, const std::string outname, const size_t len, const size_t *bits_not_encoded, const std::string msg)
 {
     // setup for decompressing
     struct jpeg_decompress_struct cinfo;
@@ -114,17 +150,31 @@ int readnChange_jpeg_file(std::string filename, std::string outname, size_t len,
         printf("Color component %d\n", color_comp);
     	compptr_one = cinfo.comp_info + color_comp;
 		for (int i = 0; i < compptr_one->height_in_blocks; i++) { //by
-    		buffer_one = (cinfo.mem->access_virt_barray)((j_common_ptr)&cinfo, coeffs_array[n], i, (JDIMENSION)1, FALSE);
+    		buffer_one = (cinfo.mem->access_virt_barray)((j_common_ptr)&cinfo, coeffs_array[color_comp], i, (JDIMENSION)1, FALSE);
     		for (int j = 0; j < compptr_one->width_in_blocks; ++j) { //bx
     			blockptr_one = buffer_one[0][j]; // YES, left index must be 0 otherwise it gets SIGSEGV after half of rows. Idk why.
+
                 printf("Block %d row, %d column from %d rows %d columns\n", i, j, compptr_one->height_in_blocks, compptr_one->width_in_blocks);
                 for (int coef_num = 0; coef_num < DCTSIZE2; ++coef_num) {
-                    std::cout << blockptr_one[coef_num];
+                    std::cout << blockptr_one[coef_num] << " ";
                 }
                 std::cout << std::endl;
+
 				to_zigzag(blockptr_one);
                 for (int coef_num = 0; coef_num < DCTSIZE2; ++coef_num) {
-                    std::cout << blockptr_one[coef_num];
+                    std::cout << blockptr_one[coef_num] << " ";
+                }
+                std::cout << std::endl;
+
+                insert_by_qim(blockptr_one, len, *bits_not_encoded, msg);
+                for (int coef_num = 0; coef_num < DCTSIZE2; ++coef_num) {
+                    std::cout << blockptr_one[coef_num] << " ";
+                }
+                std::cout << std::endl;
+
+                from_zigzag(blockptr_one);
+                for (int coef_num = 0; coef_num < DCTSIZE2; ++coef_num) {
+                    std::cout << blockptr_one[coef_num] << " ";
                 }
                 std::cout << std::endl;
     		}
@@ -179,7 +229,7 @@ int main(int argc, char* argv[])
         // 1 3 6 10 15 21 28
     */
 
-    size_t lens[] = {1, 3, 6, 10, 15, 21, 28};
+    size_t lens[] = {1, 3, 6, 10, 15, 21, 28}; // amount of coefficients for inserting
     for (int k = 0; k < 7; ++k) {
         // Try reading and changing a jpeg
         bits_not_encoded = bmsg.size();
