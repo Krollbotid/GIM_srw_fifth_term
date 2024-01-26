@@ -76,7 +76,7 @@ JCOEF find_quant_step(const JCOEFPTR arr, const size_t begin, const size_t end) 
             leastFrequentElements.push_back(pair.first);
         }
     }
-    std::transform(vec.begin(), vec.end(), vec.begin(), [](JCOEF n) { return std::abs(n); });
+    std::transform(leastFrequentElements.begin(), leastFrequentElements.end(), leastFrequentElements.begin(), [](JCOEF n) { return std::abs(n); });
     return std::min_element(leastFrequentElements.begin(), leastFrequentElements.end());
 }
 
@@ -166,7 +166,7 @@ int readnChange_jpeg_file(const std::string filename, const std::string outname,
                 }
                 std::cout << std::endl;
 
-                insert_by_qim(blockptr_one, len, *bits_not_encoded, msg);
+                insert_by_qim(blockptr_one, len, bits_not_encoded, msg);
                 for (int coef_num = 0; coef_num < DCTSIZE2; ++coef_num) {
                     std::cout << blockptr_one[coef_num] << " ";
                 }
@@ -233,7 +233,7 @@ int main(int argc, char* argv[])
     for (int k = 0; k < 7; ++k) {
         // Try reading and changing a jpeg
         bits_not_encoded = bmsg.size();
-        if (readnChange_jpeg_file(infilename, outfilename + std::to_string(k) + std::string(".jpg"), lens[k], &bits_not_encoded) == 0)
+        if (readnChange_jpeg_file(infilename, outfilename + std::to_string(k) + std::string(".jpg"), lens[k], &bits_not_encoded, msg) == 0)
         {
             std::cout << "It's Okay... " << bits_not_encoded << "bits left not encoded." << std::endl;
         }
