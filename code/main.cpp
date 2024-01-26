@@ -77,10 +77,10 @@ JCOEF find_quant_step(const JCOEFPTR arr, const size_t begin, const size_t end) 
         }
     }
     std::transform(leastFrequentElements.begin(), leastFrequentElements.end(), leastFrequentElements.begin(), [](JCOEF n) { return std::abs(n); });
-    return std::min_element(leastFrequentElements.begin(), leastFrequentElements.end());
+    return *std::min_element(leastFrequentElements.begin(), leastFrequentElements.end());
 }
 
-void insert_by_qim(const JCOEFPTR block, const size_t len, const size_t *bits_not_encoded, const std::string msg) {
+void insert_by_qim(const JCOEFPTR block, const size_t len, size_t *bits_not_encoded, const std::string msg) {
     JCOEF q = find_quant_step(block, 1, DCTSIZE2 - len);
     for (int i = DCTSIZE2 - len; i < DCTSIZE2; ++i) {
         block[i] = q * (block[i] / q) + q / 2 * (msg[msg.size() - *bits_not_encoded] - '0');
@@ -114,7 +114,7 @@ int write_jpeg_file(std::string outname, jpeg_decompress_struct in_cinfo, jvirt_
     return 0;
 }
 
-int readnChange_jpeg_file(const std::string filename, const std::string outname, const size_t len, const size_t *bits_not_encoded, const std::string msg)
+int readnChange_jpeg_file(const std::string filename, const std::string outname, const size_t len, size_t *bits_not_encoded, const std::string msg)
 {
     // setup for decompressing
     struct jpeg_decompress_struct cinfo;
