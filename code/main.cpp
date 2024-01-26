@@ -82,10 +82,14 @@ JCOEF find_quant_step(const JCOEFPTR arr, const size_t begin, const size_t end) 
 
 void insert_by_qim(const JCOEFPTR block, const size_t len, size_t *bits_not_encoded, const std::string msg) {
     JCOEF q = find_quant_step(block, 1, DCTSIZE2 - len);
+    if (q < 2) 
+        q = 2;
+    int counter = msg.size() - *bits_not_encoded;
     for (int i = DCTSIZE2 - len; i < DCTSIZE2; ++i) {
-        block[i] = q * (block[i] / q) + q / 2 * (msg[msg.size() - *bits_not_encoded] - '0');
-        --(*bits_not_encoded);
+        block[i] = q * (block[i] / q) + q / 2 * (int) (msg[counter] - '0');
+        ++counter;
     }
+    *bits_not_encoded = msg.size() - counter;
 }
 
 int write_jpeg_file(std::string outname, jpeg_decompress_struct in_cinfo, jvirt_barray_ptr *coeffs_array){
