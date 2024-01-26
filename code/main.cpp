@@ -30,7 +30,7 @@ int write_jpeg_file(std::string outname, jpeg_decompress_struct in_cinfo, jvirt_
     return 0;
 }
 
-int readnChange_jpeg_file(std::string filename, std::string outname, int** A)
+int readnChange_jpeg_file(std::string filename, std::string outname, int A[8][8])
 {
     struct jpeg_decompress_struct cinfo;
     struct jpeg_error_mgr jerr;
@@ -88,7 +88,7 @@ int readnChange_jpeg_file(std::string filename, std::string outname, int** A)
 int main(int argc, char* argv[])
 {
 	if (argc != 3) {
-        fprintf(stderr, "Usage: %s <input_file> <output_file_base>\n", argv[0]);
+        fprintf(stderr, "Usage: %s <input_file> <output_file_base>\ne.g. %s examplein.jpg exampleout\n", argv[0], argv[0]);
         exit(EXIT_FAILURE);
     }
     std::string infilename(argv[1]), outfilename(argv[2]);
@@ -115,7 +115,7 @@ int main(int argc, char* argv[])
         // 1 3 6 10 15 21 28 34
     */
     
-    for (k = 0; k < 7; ++k) {
+    for (int k = 0; k < 7; ++k) {
         int A[8][8] = {0};
         for (int i = 0; i < 8; ++i) {
             for (int j = 0; j < 8; ++j) {
@@ -126,7 +126,7 @@ int main(int argc, char* argv[])
         }
 
         /* Try reading and changing a jpeg*/
-        if (readnChange_jpeg_file(infilename, outfilename + std::to_string(k), A) == 0)
+        if (readnChange_jpeg_file(infilename, outfilename + std::to_string(k) + std::string(".jpg"), A) == 0)
         {
             std::cout << "It's Okay..." << std::endl;
         }
