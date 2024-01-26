@@ -2,7 +2,49 @@
 #include <jpeglib.h>
 #include <stdlib.h>
 #include <iostream>
-#include <string>    
+#include <string>
+#include <bitset>    
+
+// Tables below exist in jutils.c, but I dont want to waste my time looking for way to include them - copy-paste is faster
+
+const int my_jpeg_zigzag_order[DCTSIZE2] = {
+   0,  1,  5,  6, 14, 15, 27, 28,
+   2,  4,  7, 13, 16, 26, 29, 42,
+   3,  8, 12, 17, 25, 30, 41, 43,
+   9, 11, 18, 24, 31, 40, 44, 53,
+  10, 19, 23, 32, 39, 45, 52, 54,
+  20, 22, 33, 38, 46, 51, 55, 60,
+  21, 34, 37, 47, 50, 56, 59, 61,
+  35, 36, 48, 49, 57, 58, 62, 63
+};
+
+const int my_jpeg_natural_order[DCTSIZE2] = {
+   0,  1,  8, 16,  9,  2,  3, 10,
+  17, 24, 32, 25, 18, 11,  4,  5,
+  12, 19, 26, 33, 40, 48, 41, 34,
+  27, 20, 13,  6,  7, 14, 21, 28,
+  35, 42, 49, 56, 57, 50, 43, 36,
+  29, 22, 15, 23, 30, 37, 44, 51,
+  58, 59, 52, 45, 38, 31, 39, 46,
+  53, 60, 61, 54, 47, 55, 62, 63
+};
+
+JBLOCK to_zigzag(const JBLOCK in) {
+    JBLOCK out;
+    for (int i = 0; i < DCTSIZE2; ++i) {
+        out[my_jpeg_zigzag_order[i]] = in[i];
+    }
+    return out;
+}
+
+JBLOCK from_zigzag(const JBLOCK in) {
+    JBLOCK out;
+    for (int i = 0; i < DCTSIZE2; ++i) {
+        out[my_jpeg_natural_order[i]] = in[i];
+    }
+    return out;
+}
+
 
 int write_jpeg_file(std::string outname, jpeg_decompress_struct in_cinfo, jvirt_barray_ptr *coeffs_array){
 
@@ -30,25 +72,29 @@ int write_jpeg_file(std::string outname, jpeg_decompress_struct in_cinfo, jvirt_
     return 0;
 }
 
-int readnChange_jpeg_file(std::string filename, std::string outname, int A[8][8])
+int readnChange_jpeg_file(std::string filename, std::string outname, size_t len, size_t *bits_not_encoded)
 {
+    // setup for decompressing
     struct jpeg_decompress_struct cinfo;
     struct jpeg_error_mgr jerr;
     FILE * infile;
-
     if ((infile = fopen(filename.c_str(), "rb")) == NULL) {
     	fprintf(stderr, "can't open %s\n", filename.c_str());
     	return 1;
     }
-
     cinfo.err = jpeg_std_error(&jerr);
     jpeg_create_decompress(&cinfo);
     jpeg_stdio_src(&cinfo, infile);
     jpeg_read_header(&cinfo, TRUE);
 
-
     jvirt_barray_ptr *coeffs_array = jpeg_read_coefficients(&cinfo);
     JBLOCKARRAY buffer_one;
+    /*
+        Note about types:
+        JCOEPTR is defined as JCOEF*
+        JBLOCK is defined as JCOEF[DCTSIZE2]
+        So in general they're equal
+    */
     JCOEFPTR blockptr_one;
     jpeg_component_info* compptr_one;
 	/*
@@ -58,20 +104,19 @@ int readnChange_jpeg_file(std::string filename, std::string outname, int A[8][8]
     int bx = 0; // between 0 and compptr_one->width_in_blocks
     int bi = 0; // between 0 and 64 (8x8)
 	*/
-	for (int n = 0; n < 3; n++) { // ci
+	for (int color_comp = 0; color_comp < 3; ++color_comp) { // ci
+        printf("Color component %d\n", color_comp);
     	compptr_one = cinfo.comp_info + n;
 		for (int i = 0; i < compptr_one->height_in_blocks; i++) { //by
     		buffer_one = (cinfo.mem->access_virt_barray)((j_common_ptr)&cinfo, coeffs_array[n], i, (JDIMENSION)1, FALSE);
-    		for (int j = 0; j < compptr_one->width_in_blocks; j++) { //bx
+    		for (int j = 0; j < compptr_one->width_in_blocks; ++j) { //bx
     			blockptr_one = buffer_one[0][j]; // YES, left index must be 0 otherwise it gets SIGSEGV after half of rows. Idk why.
-				printf("Block %d row, %d column from %d rows %d columns\n", i, j, compptr_one->height_in_blocks, compptr_one->width_in_blocks);
-				for (int l = 0; l < 64; l += 8) {
-					for (int k = l; k < 8 + l; k++) { // bi = k + l
-						printf("%d ", blockptr_one[k]);
-						blockptr_one[k] += A[l][k]; // modifying each coefficient
-					}
-					printf("\n");
-				}
+				JBLOCK editable = to_zigzag(blockptr_one);
+                printf("Block %d row, %d column from %d rows %d columns\n", i, j, compptr_one->height_in_blocks, compptr_one->width_in_blocks);
+                for (int coef_num = 0; coef_num < DCTSIZE2; ++coef_num) {
+                    std::cout << editable[coef_num];
+                }
+                std::cout << std::endl;
     		}
     	}
 	}
@@ -93,6 +138,15 @@ int main(int argc, char* argv[])
     }
     std::string infilename(argv[1]), outfilename(argv[2]);
 
+    // secret message setup
+    std::string msg = "Here is Johnny!";
+    std::string bmsg;
+    for (char c : msg) {
+        std::bitset<8> binary(c);
+        bmsg += binary.to_string();
+    }
+    size_t bits_not_encoded;
+
     /*
 	int A[8][8] = {
         {5, 4, 6, 8, 1, 1, 7, 9},
@@ -112,23 +166,16 @@ int main(int argc, char* argv[])
         5   6   7   8   9   10  11  12
         6   7   8   9   10  11  12  13
         7   8   9   10  11  12  13  14
-        // 1 3 6 10 15 21 28 34
+        // 1 3 6 10 15 21 28
     */
-    
-    for (int k = 0; k < 7; ++k) {
-        int A[8][8] = {0};
-        for (int i = 0; i < 8; ++i) {
-            for (int j = 0; j < 8; ++j) {
-                if (i + j >= 14 - k) {
-                    A[i][j] = 50;
-                }
-            }
-        }
 
-        /* Try reading and changing a jpeg*/
-        if (readnChange_jpeg_file(infilename, outfilename + std::to_string(k) + std::string(".jpg"), A) == 0)
+    size_t lens[] = {1, 3, 6, 10, 15, 21, 28};
+    for (int k = 0; k < 7; ++k) {
+        // Try reading and changing a jpeg
+        bits_not_encoded = bmsg.size();
+        if (readnChange_jpeg_file(infilename, outfilename + std::to_string(k) + std::string(".jpg"), lens[i], &bits_not_encoded) == 0)
         {
-            std::cout << "It's Okay..." << std::endl;
+            std::cout << "It's Okay... " << bits_not_encoded << "bits left not encoded." << std::endl;
         }
         else return 1;
     }
