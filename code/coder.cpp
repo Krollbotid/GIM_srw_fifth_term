@@ -1,6 +1,4 @@
 #include "common.h"
-#include <stdio.h>
-#include <iostream>
 
 void insert_by_qim(const JCOEFPTR block, const size_t len, size_t *bits_not_encoded, const std::string msg) {
     JCOEF q = find_quant_step(block, 1, DCTSIZE2 - len);

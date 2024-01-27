@@ -1,5 +1,7 @@
-#include <jpeglib.h>
+#include <stdio.h>
+#include <iostream>
 #include <stdlib.h>
+#include <jpeglib.h>
 #include <unordered_map>
 #include <vector>
 #include <string>
