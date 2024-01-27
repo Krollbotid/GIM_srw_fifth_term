@@ -2,12 +2,12 @@
 
 void insert_by_qim(const JCOEFPTR block, const size_t len, size_t *bits_not_encoded, const std::string msg) {
     JCOEF q = find_quant_step(block, 1, DCTSIZE2 - len);
-    if (q < 2) 
-        q = 2;
     for (int i = DCTSIZE2 - len; i < DCTSIZE2; ++i) {
-        block[i] = q * (block[i] / q) + q / 2 * (int) (msg[msg.size() - *bits_not_encoded] - '0');
-        --(*bits_not_encoded);
-        if (!(*bits_not_encoded))
+        char c = msg[msg.size() - *bits_not_encoded] - '0';
+        JCOEF sec_bit = (JCOEF) c;
+        block[i] = q * (int) floor( (float) block[i] / q) + q * sec_bit / 2;
+        *bits_not_encoded -= 1;
+        if (*bits_not_encoded == 0)
             break;
     }
     return;
@@ -106,7 +106,7 @@ int main(int argc, char* argv[])
     std::string infilename(argv[1]), outfilename(argv[2]);
 
     // secret message setup
-    std::string msg = "Here is Johnny!";
+    std::string msg = "Here is Johnny!!";
     std::string bmsg;
     for (char c : msg) {
         std::bitset<8> binary(c);
@@ -136,8 +136,8 @@ int main(int argc, char* argv[])
         // 1 3 6 10 15 21 28
     */
 
-    size_t lens[] = {1, 3, 6, 10, 15, 21, 28}; // amount of coefficients for inserting
-    for (int k = 0; k < 7; ++k) {
+    size_t lens[] = {10}; // amount of coefficients for inserting
+    for (int k = 0; k < sizeof(lens) / sizeof(lens[0]); ++k) {
         // Try reading and changing a jpeg
         bits_not_encoded = bmsg.size();
         if (readnChange_jpeg_file(infilename, outfilename + std::to_string(k) + std::string(".jpg"), lens[k], &bits_not_encoded, bmsg) == 0)

@@ -2,17 +2,17 @@
 
 void extract_by_qim(const JCOEFPTR block, const size_t len, size_t *bits_decoded, std::string *msg) {
     JCOEF q = find_quant_step(block, 1, DCTSIZE2 - len);
-    if (q < 2) 
-        q = 2;
     for (int i = DCTSIZE2 - len; i < DCTSIZE2; ++i) {
-        int b = block[i] % q; // intermediate term
+        int b = block[i] - q * (int) floor( (float) block[i] / q); // intermediate term
         if (abs(b) < abs(b - q / 2)) {
             *msg += '0';
         }
         else {
             *msg += '1';
         }
-        ++(*bits_decoded);
+        *bits_decoded += 1;
+        if (*bits_decoded == 48000)
+            break;
     }
     return;
 }
@@ -57,9 +57,14 @@ int readnChange_jpeg_file(const std::string filename, const size_t len, size_t *
     			blockptr_one = buffer_one[0][j]; // YES, left index must be 0 otherwise it gets SIGSEGV after half of rows. Idk why.
 				to_zigzag(blockptr_one);
                 extract_by_qim(blockptr_one, len, bits_decoded, msg);
+                from_zigzag(blockptr_one);
+                if (*bits_decoded >= 48000) {
+                    goto out_of_cycles;
+                }
     		}
     	}
 	}
+    out_of_cycles:
 
     jpeg_finish_decompress( &cinfo );
     jpeg_destroy_decompress( &cinfo );
@@ -76,10 +81,9 @@ int main(int argc, char* argv[])
     }
     std::string infilename(argv[1]);
 
-    // secret message setup
-
-    size_t lens[] = {1, 3, 6, 10, 15, 21, 28}; // amount of coefficients for inserting
-    for (int k = 0; k < 7; ++k) {
+    size_t lens[] = {10}; // amount of coefficients for inserting
+    for (int k = 0; k < sizeof(lens) / sizeof(lens[0]); ++k) {
+        // secret message setup
         std::string msg;
         std::string bmsg;
         size_t bits_decoded = 0;
@@ -87,13 +91,13 @@ int main(int argc, char* argv[])
         if (readnChange_jpeg_file(infilename + std::to_string(k) + std::string(".jpg"), lens[k], &bits_decoded, &bmsg) == 0)
         {
             std::cout << "It's Okay... " << bits_decoded << "bits decoded." << std::endl;
-            for (int i = 0; i < bits_decoded % 8; ++i) {
+            /*for (int i = 0; i < bits_decoded % 8; ++i) {
                 bmsg.pop_back();
             }
             bits_decoded -= bits_decoded % 8;
             if (bits_decoded != bmsg.size() ) {
                 std::cout << bits_decoded << bmsg.size() << std::endl;
-            }
+            }*/
             for (int i = 0; i < bits_decoded; i += 8) {
                 std::bitset<8> byte(bmsg.substr(i, 8));
                 char c = static_cast<char>(byte.to_ulong());

@@ -66,5 +66,10 @@ JCOEF find_quant_step(const JCOEFPTR arr, const size_t begin, const size_t end) 
         }
     }
     std::transform(leastFrequentElements.begin(), leastFrequentElements.end(), leastFrequentElements.begin(), [](JCOEF n) { return std::abs(n); });
-    return *std::min_element(leastFrequentElements.begin(), leastFrequentElements.end());
+    JCOEF ans = *std::min_element(leastFrequentElements.begin(), leastFrequentElements.end());
+    if (ans < 3)
+        ans = 3;
+    if (ans > 20)
+        ans = 20;
+    return ans;
 }
