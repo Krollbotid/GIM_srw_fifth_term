@@ -4,3 +4,4 @@
 python decoder https://github.com/tbpaolini/PyJpegDecoder/blob/master/jpeg_decoder.py
 headers:
     https://github.com/libjpeg-turbo/libjpeg-turbo/blob/main/jpeglib.h
+как работает qim https://computeroptics.ru/eng/KO/Annot/KO42-1/420115.html
