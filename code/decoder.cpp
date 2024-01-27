@@ -77,12 +77,12 @@ int main(int argc, char* argv[])
     std::string infilename(argv[1]);
 
     // secret message setup
-    std::string msg;
-    std::string bmsg;
-    size_t bits_decoded;
 
     size_t lens[] = {1, 3, 6, 10, 15, 21, 28}; // amount of coefficients for inserting
     for (int k = 0; k < 7; ++k) {
+        std::string msg;
+        std::string bmsg;
+        size_t bits_decoded = 0;
         // Try reading and changing a jpeg
         if (readnChange_jpeg_file(infilename + std::to_string(k) + std::string(".jpg"), lens[k], &bits_decoded, &bmsg) == 0)
         {
