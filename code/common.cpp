@@ -169,9 +169,24 @@ namespace evolution {
     {
         std::vector<individ> arr(std::begin(population), std::end(population));
 
+        for(int j = 0; j < MAXPOP; ++j) {
+	    	int sum = 0;
+            for (int i = 0; i < population[j].genLen; ++i) {
+                sum += population[j].gene[i];
+            }
+            if (sum == 6) {
+                arr.push_back(population[j]);
+            }
+	    }
+
+        int counter = 0, saved_size = arr.size();        
+        while (arr.size() < MAXPOP / 10) {
+            arr.push_back(arr[counter % saved_size]);
+            ++counter;
+        }
+
         // Use std::partial_sort to get the n largest elements
         std::partial_sort(arr.begin(), arr.begin() + MAXPOP / 10, arr.end(), IndividComparator);
-	    int temppop[MAXPOP];
 
 	    for(int i = 0; i < MAXPOP / 10; ++i) {
 	    	for (int j = i + 1; j < MAXPOP / 10; ++j) {
@@ -205,7 +220,7 @@ namespace evolution {
 
     	int iterations = 0; // Keep record of the iterations.
         char del[50] = {'/'};
-    	while (index < 0 && iterations < 50) { // Repeat until solution found, or over 50 iterations.
+    	while (index < 0 && iterations < 50) { // Repeat until solution found and until 50 iterations.
             std::cout << del << " " << iterations << std::endl;
     		CreateNewPopulation();
             popSave();
