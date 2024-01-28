@@ -3,7 +3,7 @@
 void extract_by_qim(const JCOEFPTR block, const size_t len, size_t *bits_decoded, std::string *msg, const evolution::individ &ind) {
     JCOEF q = find_quant_step(block, 1, DCTSIZE2 - len);
     for (int i = DCTSIZE2 - len; i < DCTSIZE2; ++i) {
-        if (!(ind.gene[i]))
+        if (!(ind.gene[i + len - DCTSIZE2]))
             continue;
         int b = block[i] - q * (int) floor( (float) block[i] / q); // intermediate term
         if (abs(b) < abs(b - q / 2)) {
@@ -12,6 +12,8 @@ void extract_by_qim(const JCOEFPTR block, const size_t len, size_t *bits_decoded
         else {
             *msg += '1';
         }
+        //std::cout << i << " " << std::endl; 
+        //std::cout << block[i] << " " << q << " " << msg->back() << std::endl;
         *bits_decoded += 1;
         if (*bits_decoded == 48000)
             break;
@@ -57,6 +59,10 @@ int readnChange_jpeg_file(const std::string filename, const size_t len, size_t *
     		buffer_one = (cinfo.mem->access_virt_barray)((j_common_ptr)&cinfo, coeffs_array[color_comp], i, (JDIMENSION)1, FALSE);
     		for (int j = 0; j < compptr_one->width_in_blocks; ++j) { //bx
     			blockptr_one = buffer_one[0][j]; // YES, left index must be 0 otherwise it gets SIGSEGV after half of rows. Idk why.
+                /*std::cout << "block " << color_comp << " " << i << " " << j << std::endl;
+                for (int l = 0; l < DCTSIZE2; ++l)
+                    std::cout << blockptr_one[l] << " ";*/
+                std::cout << std::endl;
 				to_zigzag(blockptr_one);
                 extract_by_qim(blockptr_one, len, bits_decoded, msg, ind);
                 from_zigzag(blockptr_one);
@@ -87,13 +93,13 @@ int main(int argc, char* argv[])
     size_t lens[] = {10}; // amount of coefficients for inserting
     evolution::Evolution model;
     model.popLoad();
-    for (int k = 0; k < MAXPOP; ++k) {
+    for (int k = 1; k < MAXPOP; ++k) {
         // secret message setup
         std::string msg;
         std::string bmsg;
         size_t bits_decoded = 0;
         // Try reading and changing a jpeg
-        if (readnChange_jpeg_file(infilename + std::to_string(k) + std::string(".jpg"), lens[k], &bits_decoded, &bmsg, model.getGene(k)) == 0)
+        if (readnChange_jpeg_file(infilename + std::to_string(k) + std::string(".jpg"), lens[0], &bits_decoded, &bmsg, model.getGene(k)) == 0)
         {
             std::cout << "It's Okay... " << bits_decoded << "bits decoded." << std::endl;
             /*for (int i = 0; i < bits_decoded % 8; ++i) {
@@ -103,6 +109,7 @@ int main(int argc, char* argv[])
             if (bits_decoded != bmsg.size() ) {
                 std::cout << bits_decoded << bmsg.size() << std::endl;
             }*/
+            //std::cout << bmsg.substr(0, 128) << std::endl;
             for (int i = 0; i < bits_decoded; i += 8) {
                 std::bitset<8> byte(bmsg.substr(i, 8));
                 char c = static_cast<char>(byte.to_ulong());

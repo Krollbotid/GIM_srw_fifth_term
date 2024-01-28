@@ -141,9 +141,10 @@ namespace evolution {
 
     int Evolution::CreateFitnesses(const std::string &filename)
     {
-        std::string baseCom("./coder ./source/");
+        std::string baseCom("./coder ");
         std::string comEnd(".jpg"), comEnd2(".csv");
-        system((baseCom + filename + comEnd).c_str());
+        system((baseCom + filename).c_str());
+        system("python PSNRCalc.py");
         std::ifstream myfile;
         myfile.open((filename + comEnd2).c_str());
         int fitness = -1;
@@ -203,9 +204,9 @@ namespace evolution {
     	}
 
     	int iterations = 0; // Keep record of the iterations.
-        char del[50] = {"/"};
-    	while (index < 0 || iterations < 50) { // Repeat until solution found, or over 50 iterations.
-            std::cout << del << std::endl;
+        char del[50] = {'/'};
+    	while (index < 0 && iterations < 50) { // Repeat until solution found, or over 50 iterations.
+            std::cout << del << " " << iterations << std::endl;
     		CreateNewPopulation();
             popSave();
             index = CreateFitnesses(filename);

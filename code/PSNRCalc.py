@@ -29,8 +29,10 @@ def calculate_psnr(n, image_name):
 	return psnr
 
 img = "kok"
+psnr_values = []  # Create an empty list to store the PSNR values
+for i in range(100):
+    psnr = calculate_psnr(str(i), img)
+    psnr_values.append([psnr])  # Append the PSNR value as a list
 with open('./PSNR-result/' + img + '.csv', 'w', newline='\n') as myfile:
-	wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
-	for i in range(50):
-		wr.writerow(calculate_psnr(str(i)), img)
-os.system("pause")
+    wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
+    wr.writerows(psnr_values)  # Write the entire list to the CSV file

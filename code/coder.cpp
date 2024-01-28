@@ -3,11 +3,14 @@
 void insert_by_qim(const JCOEFPTR block, const size_t len, size_t *bits_not_encoded, const std::string msg, const evolution::individ &ind) {
     JCOEF q = find_quant_step(block, 1, DCTSIZE2 - len);
     for (int i = DCTSIZE2 - len; i < DCTSIZE2; ++i) {
-        if (!(ind.gene[i]))
+        if (!(ind.gene[i + len - DCTSIZE2]))
             continue;
         char c = msg[msg.size() - *bits_not_encoded] - '0';
         JCOEF sec_bit = (JCOEF) c;
+        //std::cout << i << " " << std::endl; 
+        //std::cout << block[i] << " " << q << " " << sec_bit << std::endl;
         block[i] = q * (int) floor( (float) block[i] / q) + q * sec_bit / 2;
+        //std::cout << block[i] << " " << q << " " << sec_bit << std::endl;
         *bits_not_encoded -= 1;
         if (*bits_not_encoded == 0)
             break;
@@ -111,35 +114,25 @@ int main(int argc, char* argv[])
     outfilename += argv[1];
 
     // secret message setup
-    std::string msg = "Here is Johnny!!";
+    std::ifstream file("info.txt");
+    std::string msg;
+
+    if (file.is_open()) {
+        std::string line;
+        while (file >> line) {
+            msg += line + " ";
+        }
+        file.close();
+    } else {
+        std::cerr << "Error: Unable to open the file." << std::endl;
+    }
+
     std::string bmsg;
     for (char c : msg) {
         std::bitset<8> binary(c);
         bmsg += binary.to_string();
     }
     size_t bits_not_encoded;
-
-    /*
-	int A[8][8] = {
-        {5, 4, 6, 8, 1, 1, 7, 9},
-        {1, 7, 7, 8, 8, 5, 2, 6},
-        {8, 7, 0, 0, 6, 0, 6, 4},
-        {2, 6, 4, 1, 7, 2, 3, 3},
-        {1, 3, 2, 3, 6, 0, 8, 5},
-        {6, 2, 3, 9, 2, 7, 5, 7},
-        {2, 7, 5, 1, 7, 2, 5, 2},
-        {3, 7, 4, 0, 8, 5, 2, 5}
-    };
-        0   1   2   3   4   5   6   7
-        1   2   3   4   5   6   7   8
-        2   3   4   5   6   7   8   9
-        3   4   5   6   7   8   9   10
-        4   5   6   7   8   9   10  11
-        5   6   7   8   9   10  11  12
-        6   7   8   9   10  11  12  13
-        7   8   9   10  11  12  13  14
-        // 1 3 6 10 15 21 28
-    */
 
     size_t lens[] = {10}; // amount of coefficients for inserting
 
@@ -148,8 +141,9 @@ int main(int argc, char* argv[])
     for (int k = 0; k < MAXPOP; ++k) {
         // Try reading and changing a jpeg
         bits_not_encoded = bmsg.size();
-        if (readnChange_jpeg_file(infilename, outfilename + std::to_string(k) + std::string(".jpg"), lens[0], &bits_not_encoded, bmsg, model.getGene(k)) == 0)
+        if (readnChange_jpeg_file(infilename + std::string(".jpg"), outfilename + std::to_string(k) + std::string(".jpg"), lens[0], &bits_not_encoded, bmsg, model.getGene(k)) == 0)
         {
+            //std::cout << bmsg << std::endl
             std::cout << "It's Okay... Gene #" << k << " " << bits_not_encoded << "bits left not encoded." << std::endl;
         }
         else return 1;
