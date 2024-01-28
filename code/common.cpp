@@ -101,17 +101,19 @@ namespace evolution {
 
 	    individ child = p1; // Child is all first parent initially.
 
-	    int initial = 0, final = p1.genLen - 1; // The crossover boundaries.
+	    int initial = 0, final = p1.genLen; // The crossover boundaries.
 	    if (first < 50)
-            initial = crossover;	// If first parent first. start from crossover.
+            initial = crossover;
 	    else
-            final = crossover + 1; // Else end at crossover.
+            final = crossover + 1;
  
 	    for(int i = initial; i < final; ++i) { // Crossover!
 	    	child.gene[i] = p2.gene[i];
-	    	if (rand() % 100 < 5)
-                child.gene[i] = rand() % 2;
 	    }
+        for (int i = 0; i < child.genLen; ++i) [
+	    	if (rand() % 100 < 10)
+                child.gene[i] = rand() % 2;
+        ]
 
 	    return child; // Return the kid...
     }
@@ -169,28 +171,19 @@ namespace evolution {
     {
         std::vector<individ> arr(std::begin(population), std::end(population));
 
-        for(int j = 0; j < MAXPOP; ++j) {
-	    	int sum = 0;
-            for (int i = 0; i < population[j].genLen; ++i) {
-                sum += population[j].gene[i];
-            }
-            if (sum == 6) {
-                arr.push_back(population[j]);
-            }
-	    }
-
-        int counter = 0, saved_size = arr.size();        
-        while (arr.size() < MAXPOP / 10) {
-            arr.push_back(arr[counter % saved_size]);
-            ++counter;
-        }
-
         // Use std::partial_sort to get the n largest elements
         std::partial_sort(arr.begin(), arr.begin() + MAXPOP / 10, arr.end(), IndividComparator);
 
 	    for(int i = 0; i < MAXPOP / 10; ++i) {
 	    	for (int j = i + 1; j < MAXPOP / 10; ++j) {
-                population[i * 10 + j] = breed(arr[i], arr[j]);
+                int sum = 0;
+                while (sum != 6) {
+                    sum = 0;
+                    population[i * 10 + j] = breed(arr[i], arr[j]);
+                    for (int k = 0; k < population[0].genLen; ++k) {
+                        sum += population[i * 10 + j].gene[k];
+                    }
+                }
             }
 	    }
 
