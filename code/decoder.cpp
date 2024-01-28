@@ -93,7 +93,7 @@ int main(int argc, char* argv[])
         std::string bmsg;
         size_t bits_decoded = 0;
         // Try reading and changing a jpeg
-        if (readnChange_jpeg_file(infilename + std::to_string(k) + std::string(".jpg"), lens[k], &bits_decoded, &bmsg, model.population[k]) == 0)
+        if (readnChange_jpeg_file(infilename + std::to_string(k) + std::string(".jpg"), lens[k], &bits_decoded, &bmsg, model.getGene(k)) == 0)
         {
             std::cout << "It's Okay... " << bits_decoded << "bits decoded." << std::endl;
             /*for (int i = 0; i < bits_decoded % 8; ++i) {

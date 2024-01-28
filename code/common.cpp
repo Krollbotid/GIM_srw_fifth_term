@@ -110,7 +110,7 @@ namespace evolution {
 	    for(int i = initial; i < final; ++i) { // Crossover!
 	    	child.gene[i] = p2.gene[i];
 	    	if (rand() % 100 < 5)
-                child.alleles[i] = rand() % 2;
+                child.gene[i] = rand() % 2;
 	    }
 
 	    return child; // Return the kid...
@@ -119,7 +119,7 @@ namespace evolution {
     int Evolution::popSave()
     {
         std::ofstream myfile;
-        myfile.open(genStorFilename.c_str());
+        myfile.open(genStorFilename);
         for (int i = 0; i < MAXPOP; ++i) {
             for (int j = 0; j < population[i].genLen; ++j)
                 myfile << population[i].gene[j] << " ";
@@ -131,7 +131,7 @@ namespace evolution {
     int Evolution::popLoad()
     {
         std::ifstream myfile;
-        myfile.open(genStorFilename.c_str());
+        myfile.open(genStorFilename);
         for (int i = 0; i < MAXPOP; ++i) {
             for (int j = 0; j < population[i].genLen; ++j)
                 myfile >> population[i].gene[j];
@@ -142,7 +142,6 @@ namespace evolution {
     int Evolution::CreateFitnesses(const std::string &filename)
     {
         std::string baseCom("./coder ./source/");
-        std::string filename("kok");
         std::string comEnd(".jpg"), comEnd2(".csv");
         system((baseCom + filename + comEnd).c_str());
         std::ifstream myfile;
@@ -170,12 +169,12 @@ namespace evolution {
         std::vector<individ> arr(std::begin(population), std::end(population));
 
         // Use std::partial_sort to get the n largest elements
-        std::partial_sort(arr.begin(), arr.begin() + MAXPOP / 10, arr.end(), IndividComparator());
+        std::partial_sort(arr.begin(), arr.begin() + MAXPOP / 10, arr.end(), IndividComparator);
 	    int temppop[MAXPOP];
 
 	    for(int i = 0; i < MAXPOP / 10; ++i) {
 	    	for (int j = i + 1; j < MAXPOP / 10; ++j) {
-                population[i * 10 + j] = Breed(arr[i], arr[j]);
+                population[i * 10 + j] = breed(arr[i], arr[j]);
             }
 	    }
 
@@ -194,7 +193,7 @@ namespace evolution {
 
     	for (int i = 0; i < MAXPOP; ++i) { // Fill the population with numbers between
     		for (int j = 0; j < population[i].genLen; ++j) {// 0 and the result.
-    			population[i].alleles[j] = rand() % 2;
+    			population[i].gene[j] = rand() % 2;
     		}
     	}
 
@@ -207,9 +206,9 @@ namespace evolution {
         char del[50] = {"/"};
     	while (index < 0 || iterations < 50) { // Repeat until solution found, or over 50 iterations.
             std::cout << del << std::endl;
-    		CreateNewPopulation(filename);
+    		CreateNewPopulation();
             popSave();
-            index = CreateFitnesses();
+            index = CreateFitnesses(filename);
             if (index >= 0) {
     		    return index;
     	    }

@@ -11,9 +11,9 @@ int main(int argc, char* argv[])
     evolution::Evolution model;
     int ans = model.evolve(filename);
     if (ans == -1) {
-        std::cout << "No solution found." << endl;
+        std::cout << "No solution found." << std::endl;
     } else {
-        evolution::individ gn = model.GetGene(ans);
+        evolution::individ gn = model.getGene(ans);
         for (int i = 0; i < gn.genLen; ++i)
             std::cout << gn.gene[i] << " ";
         std::cout << std::endl;
