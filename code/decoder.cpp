@@ -1,8 +1,10 @@
 #include "common.h"
 
-void extract_by_qim(const JCOEFPTR block, const size_t len, size_t *bits_decoded, std::string *msg) {
+void extract_by_qim(const JCOEFPTR block, const size_t len, size_t *bits_decoded, std::string *msg, const evolution::individ &ind) {
     JCOEF q = find_quant_step(block, 1, DCTSIZE2 - len);
     for (int i = DCTSIZE2 - len; i < DCTSIZE2; ++i) {
+        if (!(ind.gene[i]))
+            continue;
         int b = block[i] - q * (int) floor( (float) block[i] / q); // intermediate term
         if (abs(b) < abs(b - q / 2)) {
             *msg += '0';
@@ -17,7 +19,7 @@ void extract_by_qim(const JCOEFPTR block, const size_t len, size_t *bits_decoded
     return;
 }
 
-int readnChange_jpeg_file(const std::string filename, const size_t len, size_t *bits_decoded, std::string *msg)
+int readnChange_jpeg_file(const std::string filename, const size_t len, size_t *bits_decoded, std::string *msg, const evolution::individ &ind)
 {
     // setup for decompressing
     struct jpeg_decompress_struct cinfo;
@@ -56,7 +58,7 @@ int readnChange_jpeg_file(const std::string filename, const size_t len, size_t *
     		for (int j = 0; j < compptr_one->width_in_blocks; ++j) { //bx
     			blockptr_one = buffer_one[0][j]; // YES, left index must be 0 otherwise it gets SIGSEGV after half of rows. Idk why.
 				to_zigzag(blockptr_one);
-                extract_by_qim(blockptr_one, len, bits_decoded, msg);
+                extract_by_qim(blockptr_one, len, bits_decoded, msg, ind);
                 from_zigzag(blockptr_one);
                 if (*bits_decoded >= 48000) {
                     goto out_of_cycles;
@@ -79,16 +81,19 @@ int main(int argc, char* argv[])
         fprintf(stderr, "Usage: %s <input_file_base>\ne.g. %s examplein\n", argv[0], argv[0]);
         exit(EXIT_FAILURE);
     }
-    std::string infilename(argv[1]);
+    std::string infilename("./encoded/");
+    infilename += argv[1];
 
     size_t lens[] = {10}; // amount of coefficients for inserting
-    for (int k = 0; k < sizeof(lens) / sizeof(lens[0]); ++k) {
+    evolution::Evolution model;
+    model.popLoad();
+    for (int k = 0; k < MAXPOP; ++k) {
         // secret message setup
         std::string msg;
         std::string bmsg;
         size_t bits_decoded = 0;
         // Try reading and changing a jpeg
-        if (readnChange_jpeg_file(infilename + std::to_string(k) + std::string(".jpg"), lens[k], &bits_decoded, &bmsg) == 0)
+        if (readnChange_jpeg_file(infilename + std::to_string(k) + std::string(".jpg"), lens[k], &bits_decoded, &bmsg, model.population[k]) == 0)
         {
             std::cout << "It's Okay... " << bits_decoded << "bits decoded." << std::endl;
             /*for (int i = 0; i < bits_decoded % 8; ++i) {

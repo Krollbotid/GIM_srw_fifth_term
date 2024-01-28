@@ -22,7 +22,8 @@ const int my_jpeg_natural_order[DCTSIZE2] = {
   53, 60, 61, 54, 47, 55, 62, 63
 };
 
-void to_zigzag(const JCOEFPTR in) {
+void to_zigzag(const JCOEFPTR in)
+{
     JBLOCK buf;
     for (int i = 0; i < DCTSIZE2; ++i) {
         buf[my_jpeg_zigzag_order[i]] = in[i];
@@ -33,7 +34,8 @@ void to_zigzag(const JCOEFPTR in) {
     return;
 }
 
-void from_zigzag(const JCOEFPTR in) {
+void from_zigzag(const JCOEFPTR in)
+{
     JBLOCK buf;
     for (int i = 0; i < DCTSIZE2; ++i) {
         buf[my_jpeg_natural_order[i]] = in[i];
@@ -44,7 +46,8 @@ void from_zigzag(const JCOEFPTR in) {
     return;
 }
 
-JCOEF find_quant_step(const JCOEFPTR arr, const size_t begin, const size_t end) { // [begin, end)
+JCOEF find_quant_step(const JCOEFPTR arr, const size_t begin, const size_t end) // [begin, end)
+{
     std::unordered_map<JCOEF, int> frequencyMap;
 
     // Count the frequency of each element in the array
@@ -73,3 +76,146 @@ JCOEF find_quant_step(const JCOEFPTR arr, const size_t begin, const size_t end) 
         ans = 20;
     return ans;
 }
+
+namespace evolution {
+    individ::individ(const int (&ch1)[genLen])
+    {
+        for (int i = 0; i < genLen; ++i) {
+            gene[i] = ch1[i];
+        }
+    }
+
+    bool operator==(const individ &id1, const individ &id2)
+    {
+        for (int i = 0; i < id1.genLen; ++i) {
+            if (id1.gene[i] != id2.gene[i])
+                return false;
+        }
+        return true;
+    }
+
+    individ breed(const individ &p1, const individ &p2) 
+    {
+        int crossover = rand() % p1.genLen; // Create the crossover point (not first).
+	    int first = rand() % 100;// Which parent comes first?
+
+	    individ child = p1; // Child is all first parent initially.
+
+	    int initial = 0, final = p1.genLen - 1; // The crossover boundaries.
+	    if (first < 50)
+            initial = crossover;	// If first parent first. start from crossover.
+	    else
+            final = crossover + 1; // Else end at crossover.
+ 
+	    for(int i = initial; i < final; ++i) { // Crossover!
+	    	child.gene[i] = p2.gene[i];
+	    	if (rand() % 100 < 5)
+                child.alleles[i] = rand() % 2;
+	    }
+
+	    return child; // Return the kid...
+    }
+
+    int Evolution::popSave()
+    {
+        std::ofstream myfile;
+        myfile.open(genStorFilename.c_str());
+        for (int i = 0; i < MAXPOP; ++i) {
+            for (int j = 0; j < population[i].genLen; ++j)
+                myfile << population[i].gene[j] << " ";
+            myfile << std::endl;
+        }
+        return 0;
+    }
+
+    int Evolution::popLoad()
+    {
+        std::ifstream myfile;
+        myfile.open(genStorFilename.c_str());
+        for (int i = 0; i < MAXPOP; ++i) {
+            for (int j = 0; j < population[i].genLen; ++j)
+                myfile >> population[i].gene[j];
+        }
+        return 0;
+    }
+
+    int Evolution::CreateFitnesses(const std::string &filename)
+    {
+        std::string baseCom("./coder ./source/");
+        std::string filename("kok");
+        std::string comEnd(".jpg"), comEnd2(".csv");
+        system((baseCom + filename + comEnd).c_str());
+        std::ifstream myfile;
+        myfile.open((filename + comEnd2).c_str());
+        int fitness = -1;
+        for (int i = 0; i < MAXPOP; ++i) {
+            myfile >> population[i].fitness;
+            if (population[i].fitness > fitness) {
+                fitness = population[i].fitness;
+                if (fitness >= DESIRED_FITNESS)
+                    return i;
+            }
+        }
+        return -1;
+    }
+
+    bool IndividComparator(const individ& a, const individ& b)
+    {
+        // Compare based on Fitness value in descending order
+        return a.fitness > b.fitness;
+    }
+
+    int Evolution::CreateNewPopulation()
+    {
+        std::vector<individ> arr(std::begin(population), std::end(population));
+
+        // Use std::partial_sort to get the n largest elements
+        std::partial_sort(arr.begin(), arr.begin() + MAXPOP / 10, arr.end(), IndividComparator());
+	    int temppop[MAXPOP];
+
+	    for(int i = 0; i < MAXPOP / 10; ++i) {
+	    	for (int j = i + 1; j < MAXPOP / 10; ++j) {
+                population[i * 10 + j] = Breed(arr[i], arr[j]);
+            }
+	    }
+
+        for (int i = MAXPOP - MAXPOP / 10; i < MAXPOP; ++i) {
+            population[i] = arr[i % 10];
+        }
+
+        return 0;
+    }
+
+    int Evolution::evolve(const std::string &filename)
+    {
+
+    	// Generate initial population.
+    	srand((unsigned)time(NULL));
+
+    	for (int i = 0; i < MAXPOP; ++i) { // Fill the population with numbers between
+    		for (int j = 0; j < population[i].genLen; ++j) {// 0 and the result.
+    			population[i].alleles[j] = rand() % 2;
+    		}
+    	}
+
+        int index = CreateFitnesses(filename);
+        if (index >= 0) {
+    		return index;
+    	}
+
+    	int iterations = 0; // Keep record of the iterations.
+        char del[50] = {"/"};
+    	while (index < 0 || iterations < 50) { // Repeat until solution found, or over 50 iterations.
+            std::cout << del << std::endl;
+    		CreateNewPopulation(filename);
+            popSave();
+            index = CreateFitnesses();
+            if (index >= 0) {
+    		    return index;
+    	    }
+    		++iterations;
+    	}
+    	return -1;
+    }
+}
+

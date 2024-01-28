@@ -1,8 +1,10 @@
 #include "common.h"
 
-void insert_by_qim(const JCOEFPTR block, const size_t len, size_t *bits_not_encoded, const std::string msg) {
+void insert_by_qim(const JCOEFPTR block, const size_t len, size_t *bits_not_encoded, const std::string msg, const evolution::individ &ind) {
     JCOEF q = find_quant_step(block, 1, DCTSIZE2 - len);
     for (int i = DCTSIZE2 - len; i < DCTSIZE2; ++i) {
+        if (!(ind.gene[i]))
+            continue;
         char c = msg[msg.size() - *bits_not_encoded] - '0';
         JCOEF sec_bit = (JCOEF) c;
         block[i] = q * (int) floor( (float) block[i] / q) + q * sec_bit / 2;
@@ -13,7 +15,8 @@ void insert_by_qim(const JCOEFPTR block, const size_t len, size_t *bits_not_enco
     return;
 }
 
-int write_jpeg_file(std::string outname, jpeg_decompress_struct in_cinfo, jvirt_barray_ptr *coeffs_array){
+int write_jpeg_file(std::string outname, jpeg_decompress_struct in_cinfo, jvirt_barray_ptr *coeffs_array)
+{
 
     struct jpeg_compress_struct cinfo;
     struct jpeg_error_mgr jerr;
@@ -39,7 +42,7 @@ int write_jpeg_file(std::string outname, jpeg_decompress_struct in_cinfo, jvirt_
     return 0;
 }
 
-int readnChange_jpeg_file(const std::string filename, const std::string outname, const size_t len, size_t *bits_not_encoded, const std::string msg)
+int readnChange_jpeg_file(const std::string filename, const std::string outname, const size_t len, size_t *bits_not_encoded, const std::string msg, const evolution::individ &ind)
 {
     // setup for decompressing
     struct jpeg_decompress_struct cinfo;
@@ -78,7 +81,7 @@ int readnChange_jpeg_file(const std::string filename, const std::string outname,
     		for (int j = 0; j < compptr_one->width_in_blocks; ++j) { //bx
     			blockptr_one = buffer_one[0][j]; // YES, left index must be 0 otherwise it gets SIGSEGV after half of rows. Idk why.
 				to_zigzag(blockptr_one);
-                insert_by_qim(blockptr_one, len, bits_not_encoded, msg);
+                insert_by_qim(blockptr_one, len, bits_not_encoded, msg, ind);
                 from_zigzag(blockptr_one);
                 if (!(*bits_not_encoded)) {
                     goto out_of_cycles;
@@ -99,11 +102,13 @@ int readnChange_jpeg_file(const std::string filename, const std::string outname,
 
 int main(int argc, char* argv[])
 {
-	if (argc != 3) {
-        fprintf(stderr, "Usage: %s <input_file> <output_file_base>\ne.g. %s examplein.jpg exampleout\n", argv[0], argv[0]);
+	if (argc != 2) {
+        fprintf(stderr, "Usage: %s <input_file_base>\ne.g. %s examplein\n", argv[0], argv[0]);
         exit(EXIT_FAILURE);
     }
-    std::string infilename(argv[1]), outfilename(argv[2]);
+    std::string infilename("./source/"), outfilename("./encoded/");
+    infilename += argv[1];
+    outfilename += argv[1];
 
     // secret message setup
     std::string msg = "Here is Johnny!!";
@@ -137,12 +142,15 @@ int main(int argc, char* argv[])
     */
 
     size_t lens[] = {10}; // amount of coefficients for inserting
-    for (int k = 0; k < sizeof(lens) / sizeof(lens[0]); ++k) {
+
+    evolution::Evolution model;
+    model.popLoad();
+    for (int k = 0; k < MAXPOP; ++k) {
         // Try reading and changing a jpeg
         bits_not_encoded = bmsg.size();
-        if (readnChange_jpeg_file(infilename, outfilename + std::to_string(k) + std::string(".jpg"), lens[k], &bits_not_encoded, bmsg) == 0)
+        if (readnChange_jpeg_file(infilename, outfilename + std::to_string(k) + std::string(".jpg"), lens[0], &bits_not_encoded, bmsg, model.population[k]) == 0)
         {
-            std::cout << "It's Okay... " << bits_not_encoded << "bits left not encoded." << std::endl;
+            std::cout << "It's Okay... Gene #" << k << " " << bits_not_encoded << "bits left not encoded." << std::endl;
         }
         else return 1;
     }

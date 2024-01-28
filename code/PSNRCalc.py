@@ -6,9 +6,9 @@ import os
 def read_jpg(image_name):
 	return cv2.imread(image_name+'.jpg')
 
-def calculate_psnr(n):
-	s = read_jpg('./source/kok')
-	r = read_jpg('./recovery/kok'+n)
+def calculate_psnr(n, image_name):
+	s = read_jpg('./source/' + image_name)
+	r = read_jpg('./encoded/' + image_name + n)
 
 	# Convert images to floating point to prevent overflow during calculations
 	s = s.astype(np.float64)
@@ -28,14 +28,9 @@ def calculate_psnr(n):
 		psnr = 10 * np.log10((max_pixel_value ** 2) / mse)
 	return psnr
 
-
-def write_csv(n,data):
-	with open('./PSNR-result/'+n+'.csv', 'w', newline='') as myfile:
-		wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
-		wr.writerow(data)
-
-for i in range(7):
-	print("Creating CSV of PSNR-result",i,"...",sep="")
-	write_csv(str(i),[calculate_psnr(str(i))])
-
+img = "kok"
+with open('./PSNR-result/' + img + '.csv', 'w', newline='\n') as myfile:
+	wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
+	for i in range(50):
+		wr.writerow(calculate_psnr(str(i)), img)
 os.system("pause")
