@@ -110,10 +110,11 @@ namespace evolution {
 	    for(int i = initial; i < final; ++i) { // Crossover!
 	    	child.gene[i] = p2.gene[i];
 	    }
-        for (int i = 0; i < child.genLen; ++i) [
-	    	if (rand() % 100 < 10)
+        for (int i = 0; i < child.genLen; ++i) {
+	    	if (rand() % 100 < 10) {
                 child.gene[i] = rand() % 2;
-        ]
+            }
+        }
 
 	    return child; // Return the kid...
     }
