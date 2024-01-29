@@ -140,7 +140,7 @@ int main(int argc, char* argv[])
     model.popLoad(); */
     evolution::individ bestind;
     int bestgene[] = {1, 1, 0, 0, 1, 0, 1, 1, 0, 1};
-    for (int i = 0; i < 10 ++i) {
+    for (int i = 0; i < 10; ++i) {
         bestind.gene[i] = bestgene[i];
     }
     for (int k = MAXPOP; k < MAXPOP + 1; ++k) {
