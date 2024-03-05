@@ -90,8 +90,8 @@ int main(int argc, char* argv[])
     std::string infilename("./encoded/");
     infilename += argv[1];
 
-    size_t lens[] = {10}; // amount of coefficients for inserting
     evolution::Evolution model;
+    size_t lens[] = {model.getGene(0).genLen}; // amount of coefficients for inserting
     model.popLoad();
     for (int k = 1; k < MAXPOP; ++k) {
         // secret message setup

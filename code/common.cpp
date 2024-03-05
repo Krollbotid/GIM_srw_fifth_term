@@ -178,7 +178,7 @@ namespace evolution {
 	    for(int i = 0; i < MAXPOP / 10; ++i) {
 	    	for (int j = i + 1; j < MAXPOP / 10; ++j) {
                 int sum = 0;
-                while (sum != 6) {
+                while (sum != 10) {
                     sum = 0;
                     population[i * 10 + j] = breed(arr[i], arr[j]);
                     for (int k = 0; k < population[0].genLen; ++k) {

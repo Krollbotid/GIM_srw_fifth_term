@@ -134,19 +134,20 @@ int main(int argc, char* argv[])
     }
     size_t bits_not_encoded;
 
-    size_t lens[] = {10}; // amount of coefficients for inserting
-    /* uses for training
+    
     evolution::Evolution model;
-    model.popLoad(); */
-    evolution::individ bestind;
+    size_t lens[] = {model.getGene(0).genLen}; // amount of coefficients for inserting
+    //uses for training
+    model.popLoad();
+    /*evolution::individ bestind;
     int bestgene[] = {1, 1, 0, 0, 1, 0, 1, 1, 0, 1};
     for (int i = 0; i < 10; ++i) {
         bestind.gene[i] = bestgene[i];
-    }
-    for (int k = MAXPOP; k < MAXPOP + 1; ++k) {
+    }*/
+    for (int k = 0; k < MAXPOP; ++k) {
         // Try reading and changing a jpeg
         bits_not_encoded = bmsg.size();
-        if (readnChange_jpeg_file(infilename + std::string(".jpg"), outfilename + std::to_string(k) + std::string(".jpg"), lens[0], &bits_not_encoded, bmsg, bestind) == 0)
+        if (readnChange_jpeg_file(infilename + std::string(".jpg"), outfilename + std::to_string(k) + std::string(".jpg"), lens[0], &bits_not_encoded, bmsg, model.getGene(k)) == 0)
         {
             //std::cout << bmsg << std::endl
             std::cout << "It's Okay... Gene #" << k << " " << bits_not_encoded << "bits left not encoded." << std::endl;

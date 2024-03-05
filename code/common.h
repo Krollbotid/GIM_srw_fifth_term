@@ -19,10 +19,10 @@ JCOEF find_quant_step(const JCOEFPTR arr, const size_t begin, const size_t end);
 
 namespace evolution {
     struct individ {
-        static const int genLen = 10;
+        static const int genLen = 15;
         int gene[genLen];
         double fitness;
-        individ() : gene{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, fitness{0} {};
+        individ() : gene{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, fitness{0} {};
         individ(const int (&ch1)[genLen]);
     };
 
