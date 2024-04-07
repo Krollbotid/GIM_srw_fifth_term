@@ -85,6 +85,15 @@ namespace evolution {
         }
     }
 
+    int individ::getSum()
+    {
+        int sum = 0;
+        for (int i = 0; i < genLen; ++i) {
+            sum += gene[i];
+        }
+        return sum;
+    }
+
     bool operator==(const individ &id1, const individ &id2)
     {
         for (int i = 0; i < id1.genLen; ++i) {
@@ -178,13 +187,11 @@ namespace evolution {
 	    for(int i = 0; i < MAXPOP / 10; ++i) {
 	    	for (int j = i + 1; j < MAXPOP / 10; ++j) {
                 int sum = 0;
-                while (sum != 10) {
-                    sum = 0;
-                    population[i * 10 + j] = breed(arr[i], arr[j]);
-                    for (int k = 0; k < population[0].genLen; ++k) {
-                        sum += population[i * 10 + j].gene[k];
-                    }
+                individ ind;
+                while (ind.getSum() != 10) {
+                    ind = breed(arr[i], arr[j]);
                 }
+                population[i * 10 + j] = ind;
             }
 	    }
 
@@ -202,9 +209,11 @@ namespace evolution {
     	srand((unsigned)time(NULL));
 
     	for (int i = 0; i < MAXPOP; ++i) { // Fill the population with numbers between
-    		for (int j = 0; j < population[i].genLen; ++j) {// 0 and the result.
-    			population[i].gene[j] = rand() % 2;
-    		}
+            while (population[i].getsum() != 10) {
+    		    for (int j = 0; j < population[i].genLen; ++j) {// 0 and the result.
+    		    	population[i].gene[j] = rand() % 2;
+    		    }
+            }
     	}
 
         int index = CreateFitnesses(filename);

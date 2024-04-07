@@ -11,7 +11,7 @@
 #include <fstream>
 
 #define MAXPOP	100
-#define DESIRED_FITNESS 100
+#define DESIRED_FITNESS 50
 
 void to_zigzag(const JCOEFPTR in);
 void from_zigzag(const JCOEFPTR in);
@@ -24,6 +24,7 @@ namespace evolution {
         double fitness;
         individ() : gene{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, fitness{0} {};
         individ(const int (&ch1)[genLen]);
+        int getSum();
     };
 
     bool operator== (const individ &id1, const individ &id2);
