@@ -150,7 +150,7 @@ int main(int argc, char* argv[])
         if (readnChange_jpeg_file(infilename + std::string(".jpg"), outfilename + std::to_string(k) + std::string(".jpg"), lens[0], &bits_not_encoded, bmsg, model.getGene(k)) == 0)
         {
             //std::cout << bmsg << std::endl
-            std::cout << "It's Okay... Gene #" << k << " " << bits_not_encoded << "bits left not encoded." << std::endl;
+            //std::cout << "It's Okay... Gene #" << k << " " << bits_not_encoded << "bits left not encoded." << std::endl;
         }
         else return 1;
     }

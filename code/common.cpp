@@ -156,10 +156,11 @@ namespace evolution {
         
         std::string baseCom("./coder ");
         std::string comEnd(".jpg"), comEnd2(".csv");
+        std::string resultdir("./PSNR-result/");
         system((baseCom + filename).c_str());
         system("python PSNRCalc.py");
         std::ifstream myfile;
-        myfile.open((filename + comEnd2).c_str());
+        myfile.open((resultdir + filename + comEnd2).c_str());
         double bestfitness = -1;
         for (int i = 0; i < MAXPOP; ++i) {
             myfile >> population[i].fitness;
@@ -216,7 +217,7 @@ namespace evolution {
     	}
 
         double bestfitness = CreateFitnesses(filename);
-        double oldf = 0;
+        double oldf = bestfitness / 2;
 
     	int iterations = 0; // Keep record of the iterations.
         char del[50] = {'/'};

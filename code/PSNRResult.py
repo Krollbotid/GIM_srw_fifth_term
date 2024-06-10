@@ -8,7 +8,7 @@ def read_jpg(image_name):
 
 def calculate_psnr(n, image_name):
 	s = read_jpg('./source/' + image_name)
-	r = read_jpg('./encoded/' + image_name + n)
+	r = read_jpg('./encoded/' + image_name + str(n))
 
 	# Convert images to floating point to prevent overflow during calculations
 	s = s.astype(np.float64)
@@ -34,7 +34,8 @@ i = 100
 #for i in range(100):
 for img in imgs:
     psnr = calculate_psnr(str(i), img)
-    psnr_values.append([psnr])  # Append the PSNR value as a list
+    psnr_values.append(psnr)  # Append the PSNR value directly to the list
 with open('./PSNR-result/' + img + '.csv', 'w', newline='\n') as myfile:
-    wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
-    wr.writerows(psnr_values)  # Write the entire list to the CSV file
+    wr = csv.writer(myfile)
+    for value in psnr_values:
+        wr.writerow([value])  # Write each PSNR value as a single item in a row
