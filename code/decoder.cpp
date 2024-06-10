@@ -89,6 +89,9 @@ int main(int argc, char* argv[])
     }
     std::string infilename("./encoded/");
     infilename += argv[1];
+    
+    // output
+    std::ofstream file("out.txt");
 
     evolution::Evolution model;
     size_t lens[] = {model.getGene(0).genLen}; // amount of coefficients for inserting
@@ -115,7 +118,7 @@ int main(int argc, char* argv[])
                 char c = static_cast<char>(byte.to_ulong());
                 msg += c;
             }
-            std::cout << "Message:" << msg << std::endl;
+            file << "Message:" << msg << std::endl;
         }
         else return 1;
     }

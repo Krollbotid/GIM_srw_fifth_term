@@ -39,7 +39,7 @@ namespace evolution {
     public:
         int popSave();
         int popLoad();
-        int CreateFitnesses(const std::string &filename);
+        double CreateFitnesses(const std::string &filename);
         int CreateNewPopulation();
         individ getGene(const int &i) { return population[i]; }
         int evolve(const std::string &filename);

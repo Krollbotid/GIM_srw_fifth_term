@@ -151,24 +151,23 @@ namespace evolution {
         return 0;
     }
 
-    int Evolution::CreateFitnesses(const std::string &filename)
+    double Evolution::CreateFitnesses(const std::string &filename)
     {
+        
         std::string baseCom("./coder ");
         std::string comEnd(".jpg"), comEnd2(".csv");
         system((baseCom + filename).c_str());
         system("python PSNRCalc.py");
         std::ifstream myfile;
         myfile.open((filename + comEnd2).c_str());
-        int fitness = -1;
+        double bestfitness = -1;
         for (int i = 0; i < MAXPOP; ++i) {
             myfile >> population[i].fitness;
-            if (population[i].fitness > fitness) {
-                fitness = population[i].fitness;
-                if (fitness >= DESIRED_FITNESS)
-                    return i;
+            if (population[i].fitness > bestfitness) {
+                bestfitness = population[i].fitness;
             }
         }
-        return -1;
+        return bestfitness;
     }
 
     bool IndividComparator(const individ& a, const individ& b)
@@ -216,21 +215,17 @@ namespace evolution {
             }
     	}
 
-        int index = CreateFitnesses(filename);
-        if (index >= 0) {
-    		return index;
-    	}
+        double bestfitness = CreateFitnesses(filename);
+        double oldf = 0;
 
     	int iterations = 0; // Keep record of the iterations.
         char del[50] = {'/'};
-    	while (index < 0 && iterations < 50) { // Repeat until solution found and until 50 iterations.
+    	while (bestfitness - oldf > bestfitness / 100 && iterations < 50) { // Repeat until fitness rapidly increases and until 50 iterations.
             std::cout << del << " " << iterations << std::endl;
     		CreateNewPopulation();
             popSave();
-            index = CreateFitnesses(filename);
-            if (index >= 0) {
-    		    return index;
-    	    }
+            oldf = bestfitness;
+            bestfitness = CreateFitnesses(filename);
     		++iterations;
     	}
     	return -1;
