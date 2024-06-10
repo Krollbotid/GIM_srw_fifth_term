@@ -201,14 +201,14 @@ namespace evolution {
         return 0;
     }
 
-    int Evolution::evolve(const std::string &filename)
+    double Evolution::evolve(const std::string &filename)
     {
 
     	// Generate initial population.
     	srand((unsigned)time(NULL));
 
     	for (int i = 0; i < MAXPOP; ++i) { // Fill the population with numbers between
-            while (population[i].getsum() != 10) {
+            while (population[i].getSum() != 10) {
     		    for (int j = 0; j < population[i].genLen; ++j) {// 0 and the result.
     		    	population[i].gene[j] = rand() % 2;
     		    }
@@ -220,7 +220,7 @@ namespace evolution {
 
     	int iterations = 0; // Keep record of the iterations.
         char del[50] = {'/'};
-    	while (bestfitness - oldf > bestfitness / 100 && iterations < 50) { // Repeat until fitness rapidly increases and until 50 iterations.
+    	while ((bestfitness - oldf > (bestfitness / 1000)) && iterations < 50) { // Repeat while fitness rapidly increases and until 50 iterations.
             std::cout << del << " " << iterations << std::endl;
     		CreateNewPopulation();
             popSave();
@@ -228,7 +228,7 @@ namespace evolution {
             bestfitness = CreateFitnesses(filename);
     		++iterations;
     	}
-    	return -1;
+        return bestfitness;
     }
 }
 

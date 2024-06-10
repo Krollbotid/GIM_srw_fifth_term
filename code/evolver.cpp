@@ -9,14 +9,17 @@ int main(int argc, char* argv[])
     }
     std::string filename(argv[1]);
     evolution::Evolution model;
-    int ans = model.evolve(filename);
-    if (ans == -1) {
-        std::cout << "No solution found." << std::endl;
-    } else {
-        evolution::individ gn = model.getGene(ans);
-        for (int i = 0; i < gn.genLen; ++i)
-            std::cout << gn.gene[i] << " ";
-        std::cout << std::endl;
+    double bf = model.evolve(filename);
+    for (int i = 0; i < MAXPOP; ++i) {
+        evolution::individ gn = model.getGene(i);
+        if (gn.fitness >= bf) {
+            std::cout << "Best fitness: " << bf << std::endl << "Best gene: ";
+            for (int j = 0; j < gn.genLen; ++j) {
+                std::cout << gn.gene[j] << " ";
+            }
+            std::cout << std::endl;
+            break;
+        }
     }
     return 0;
 }
