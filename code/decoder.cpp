@@ -15,8 +15,8 @@ void extract_by_qim(const JCOEFPTR block, const size_t len, size_t *bits_decoded
         //std::cout << i << " " << std::endl; 
         //std::cout << block[i] << " " << q << " " << msg->back() << std::endl;
         *bits_decoded += 1;
-        if (*bits_decoded == 48000)
-            break;
+        //if (*bits_decoded == 48000)
+        //    break;
     }
     return;
 }
@@ -66,13 +66,13 @@ int readnChange_jpeg_file(const std::string filename, const size_t len, size_t *
 				to_zigzag(blockptr_one);
                 extract_by_qim(blockptr_one, len, bits_decoded, msg, ind);
                 from_zigzag(blockptr_one);
-                if (*bits_decoded >= 48000) {
-                    goto out_of_cycles;
-                }
+                //if (*bits_decoded >= 48000) {
+                //    goto out_of_cycles;
+                //}
     		}
     	}
 	}
-    out_of_cycles:
+    //out_of_cycles:
 
     jpeg_finish_decompress( &cinfo );
     jpeg_destroy_decompress( &cinfo );
@@ -95,14 +95,20 @@ int main(int argc, char* argv[])
 
     evolution::Evolution model;
     size_t lens[] = {model.getGene(0).genLen}; // amount of coefficients for inserting
-    model.popLoad();
-    for (int k = 1; k < MAXPOP; ++k) {
+    //uses for training
+    //model.popLoad();
+    evolution::individ bestind;
+    int bestgene[] = {1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1};
+    for (int i = 0; i < bestind.genLen; ++i) {
+        bestind.gene[i] = bestgene[i];
+    }
+    for (int k = MAXPOP; k < MAXPOP + 1; ++k) {
         // secret message setup
         std::string msg;
         std::string bmsg;
         size_t bits_decoded = 0;
         // Try reading and changing a jpeg
-        if (readnChange_jpeg_file(infilename + std::to_string(k) + std::string(".jpg"), lens[0], &bits_decoded, &bmsg, model.getGene(k)) == 0)
+        if (readnChange_jpeg_file(infilename + std::to_string(k) + std::string(".jpg"), bestind.genLen, &bits_decoded, &bmsg, bestind) == 0)
         {
             std::cout << "It's Okay... " << bits_decoded << "bits decoded." << std::endl;
             /*for (int i = 0; i < bits_decoded % 8; ++i) {
