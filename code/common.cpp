@@ -168,7 +168,6 @@ namespace evolution
 
     double Evolution::CreateFitnesses(const std::string &filename)
     {
-        
         std::string baseCom("./coder ");
         std::string comEnd(".jpg"), comEnd2(".csv");
         std::string resultdir("./PSNR-result/");
@@ -255,7 +254,7 @@ namespace evolution
     		    }
             }
     	}
-        
+
         popSave();
 
         double bestfitness = CreateFitnesses(filename);
@@ -263,7 +262,7 @@ namespace evolution
 
     	int iterations = 0; // Keep record of the iterations.
         char del[50] = {'/'};
-        while (bestfitness - oldf > bestfitness / 1000 && iterations < 50 || iterations < 30)
+        while (bestfitness - oldf > bestfitness / 1000 || iterations < 100)
         { // Repeat while fitness rapidly increases and until 50 iterations.
             std::cout << del << " " << iterations << std::endl;
     		CreateNewPopulation();
