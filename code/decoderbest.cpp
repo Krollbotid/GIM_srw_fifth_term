@@ -93,19 +93,29 @@ int main(int argc, char* argv[])
     // output
     std::ofstream file("out.txt");
 
-    evolution::Evolution model;
-    size_t lens[] = {model.getGene(0).genLen}; // amount of coefficients for inserting
     //uses for training
-    model.popLoad();
-    for (int k = 0; k < MAXPOP; ++k) {
+    evolution::individ bestind;
+    int bestgene[] = {1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1};
+    for (int i = 0; i < bestind.genLen; ++i) {
+        bestind.gene[i] = bestgene[i];
+    }
+    for (int k = MAXPOP; k < MAXPOP + 1; ++k) {
         // secret message setup
         std::string msg;
         std::string bmsg;
         size_t bits_decoded = 0;
         // Try reading and changing a jpeg
-        if (readnChange_jpeg_file(infilename + std::to_string(k) + std::string(".jpg"), lens[0], &bits_decoded, &bmsg, model.getGene(k)) == 0)
+        if (readnChange_jpeg_file(infilename + std::to_string(k) + std::string(".jpg"), bestind.genLen, &bits_decoded, &bmsg, bestind) == 0)
         {
             std::cout << "It's Okay... " << bits_decoded << "bits decoded." << std::endl;
+            /*for (int i = 0; i < bits_decoded % 8; ++i) {
+                bmsg.pop_back();
+            }
+            bits_decoded -= bits_decoded % 8;
+            if (bits_decoded != bmsg.size() ) {
+                std::cout << bits_decoded << bmsg.size() << std::endl;
+            }*/
+            //std::cout << bmsg.substr(0, 128) << std::endl;
             for (int i = 0; i < bits_decoded; i += 8) {
                 std::bitset<8> byte(bmsg.substr(i, 8));
                 char c = static_cast<char>(byte.to_ulong());
