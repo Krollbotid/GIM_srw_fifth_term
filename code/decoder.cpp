@@ -105,7 +105,8 @@ int main(int argc, char* argv[])
         // Try reading and changing a jpeg
         if (readnChange_jpeg_file(infilename + std::to_string(k) + std::string(".jpg"), lens[0], &bits_decoded, &bmsg, model.getGene(k)) == 0)
         {
-            std::cout << "It's Okay... " << bits_decoded << "bits decoded." << std::endl;
+            //std::cout << "It's Okay... " << bits_decoded << "bits decoded." << std::endl;
+            //suppressed output
             for (int i = 0; i < bits_decoded; i += 8) {
                 std::bitset<8> byte(bmsg.substr(i, 8));
                 char c = static_cast<char>(byte.to_ulong());

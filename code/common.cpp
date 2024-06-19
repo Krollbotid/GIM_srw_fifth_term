@@ -224,9 +224,9 @@ namespace evolution
 
         for (int i = 0; i < MAXPOP; ++i)
         {
-            individ parent1 = selectParent(totalFitness);
-            individ parent2 = selectParent(totalFitness);
             do {
+                individ parent1 = selectParent(totalFitness);
+                individ parent2 = selectParent(totalFitness);
                 newPopulation[i] = breed(parent1, parent2);
             } while (newPopulation[i].getSum() != 10);
 	    }
