@@ -255,6 +255,8 @@ namespace evolution
     		    }
             }
     	}
+        
+        popSave();
 
         double bestfitness = CreateFitnesses(filename);
         double oldf = bestfitness / 2;
