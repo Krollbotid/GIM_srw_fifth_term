@@ -28,14 +28,14 @@ def calculate_psnr(n, image_name):
 		psnr = 10 * np.log10((max_pixel_value ** 2) / mse)
 	return psnr
 
-imgs = ["kok", "splash", "babuin", "landscape", "pepper", "airplane"]
+imgs = ["splash", "tiffany", "baboon", "lenna", "airplane", "sailboat", "peppers", "house"]
 psnr_values = []  # Create an empty list to store the PSNR values
 i = 100
 #for i in range(100):
 for img in imgs:
     psnr = calculate_psnr(str(i), img)
     psnr_values.append(psnr)  # Append the PSNR value directly to the list
-with open('./PSNR-result/' + img + '.csv', 'w', newline='\n') as myfile:
+with open('./PSNR-result/results.csv', 'w', newline='\n') as myfile:
     wr = csv.writer(myfile)
     for value in psnr_values:
         wr.writerow([value])  # Write each PSNR value as a single item in a row

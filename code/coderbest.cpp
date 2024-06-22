@@ -7,10 +7,7 @@ void insert_by_qim(const JCOEFPTR block, const size_t len, size_t *bits_not_enco
             continue;
         char c = msg[msg.size() - *bits_not_encoded] - '0';
         JCOEF sec_bit = (JCOEF) c;
-        //std::cout << i << " " << std::endl; 
-        //std::cout << block[i] << " " << q << " " << sec_bit << std::endl;
         block[i] = q * (int) floor( (float) block[i] / q) + q * sec_bit / 2;
-        //std::cout << block[i] << " " << q << " " << sec_bit << std::endl;
         *bits_not_encoded -= 1;
         if (*bits_not_encoded == 0)
             break;

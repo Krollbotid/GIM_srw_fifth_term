@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import csv
 import os
+import sys
 
 def read_jpg(image_name):
 	return cv2.imread(image_name+'.jpg')
@@ -28,7 +29,7 @@ def calculate_psnr(n, image_name):
 		psnr = 10 * np.log10((max_pixel_value ** 2) / mse)
 	return psnr
 
-img = "kok"
+img = sys.argv[1]
 psnr_values = []  # Create an empty list to store the PSNR values
 for i in range(100):
     psnr = calculate_psnr(i, img)

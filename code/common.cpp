@@ -169,10 +169,10 @@ namespace evolution
     double Evolution::CreateFitnesses(const std::string &filename)
     {
         std::string baseCom("./coder ");
-        std::string comEnd(".jpg"), comEnd2(".csv");
+        std::string comEnd(".jpg"), comEnd2(".csv"), comBeg("python PSNRCalc.py ");
         std::string resultdir("./PSNR-result/");
         system((baseCom + filename).c_str());
-        system("python PSNRCalc.py");
+        system((comBeg + filename).c_str());
         std::ifstream myfile;
         myfile.open((resultdir + filename + comEnd2).c_str());
         double bestfitness = -1;
@@ -263,7 +263,7 @@ namespace evolution
     	int iterations = 0; // Keep record of the iterations.
         char del[50] = {'/'};
         while (bestfitness - oldf > bestfitness / 1000 || iterations < 100)
-        { // Repeat while fitness rapidly increases and until 50 iterations.
+        { // Repeat while fitness rapidly increases and until 100 iterations.
             std::cout << del << " " << iterations << std::endl;
     		CreateNewPopulation();
             popSave();

@@ -110,7 +110,6 @@ int coder(const std::string infilename, const std::string outfilename, const evo
 
     if (readnChange_jpeg_file(infilename + std::string(".jpg"), outfilename + std::to_string(101) + std::string(".jpg"), bestind.genLen, &bits_not_encoded, bmsg, bestind) != 0)
         return 1;
-
     return 0;
 }
 
@@ -128,6 +127,7 @@ int main(int argc, char* argv[])
     const int ones = 10;
     std::vector<int> binaryArray(len, 0);
     std::fill(binaryArray.begin(), binaryArray.begin() + ones, 1);
+    std::sort(binaryArray.begin(), binaryArray.end());
 
     evolution::individ bestind;
     bestind.fitness = -1;
@@ -139,9 +139,9 @@ int main(int argc, char* argv[])
         }
 
         coder(infilename, outfilename, ind);
-        std::string comEnd("full.txt"), resultdir("./PSNR-result/"), comBeg("python PSNRCalc.py");
+        std::string comEnd("full.txt"), resultdir("./PSNR-result/"), comBeg("python psnrone.py ");
         system((comBeg + argv[1]).c_str());
-        
+
         std::ifstream myfile;
         myfile.open((resultdir + argv[1] + comEnd).c_str());
         myfile >> ind.fitness;

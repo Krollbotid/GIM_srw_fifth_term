@@ -7,10 +7,7 @@ void insert_by_qim(const JCOEFPTR block, const size_t len, size_t *bits_not_enco
             continue;
         char c = msg[msg.size() - *bits_not_encoded] - '0';
         JCOEF sec_bit = (JCOEF) c;
-        //std::cout << i << " " << std::endl; 
-        //std::cout << block[i] << " " << q << " " << sec_bit << std::endl;
         block[i] = q * (int) floor( (float) block[i] / q) + q * sec_bit / 2;
-        //std::cout << block[i] << " " << q << " " << sec_bit << std::endl;
         *bits_not_encoded -= 1;
         if (*bits_not_encoded == 0)
             break;
@@ -144,8 +141,6 @@ int main(int argc, char* argv[])
         bits_not_encoded = bmsg.size();
         if (readnChange_jpeg_file(infilename + std::string(".jpg"), outfilename + std::to_string(k) + std::string(".jpg"), lens[0], &bits_not_encoded, bmsg, model.getGene(k)) == 0)
         {
-            //std::cout << "It's Okay... Gene #" << k << " " << bits_not_encoded << "bits left not encoded." << std::endl;
-            //suppressed output
         }
         else return 1;
     }
