@@ -270,6 +270,7 @@ namespace evolution
             oldf = bestfitness;
             bestfitness = CreateFitnesses(filename);
     		++iterations;
+            std::cout << "Best fitness: " << bestfitness << std::endl;
     	}
         return bestfitness;
     }

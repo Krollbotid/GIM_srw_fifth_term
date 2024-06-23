@@ -11,7 +11,6 @@
 #include <fstream>
 
 #define MAXPOP	100
-#define DESIRED_FITNESS 50
 
 void to_zigzag(const JCOEFPTR in);
 void from_zigzag(const JCOEFPTR in);
